@@ -1,22 +1,32 @@
 [project]
-name = "agents-that-buy"
+name = "mandatelab-workspace"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-authors = [
-    { name = "lrast", email = "luke.rast@gmail.com" }
-]
+description = "MandateLab hackathon workspace"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "mandatelab-contracts",
+    "mandatelab-engine",
+]
 
-[project.scripts]
-agents-that-buy = "agents_that_buy:main"
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<10",
+]
 
-[build-system]
-requires = ["uv_build>=0.12.3,<0.13.0"]
-build-backend = "uv_build"
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+mandatelab-contracts = { workspace = true }
+mandatelab-engine = { workspace = true }
 
 [tool.uv.workspace]
 members = [
-    "agents_that_buy/user_profile",
+    "contracts",
+    "mandate_engine",
+    "user_profile",
 ]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["contracts/src", "mandate_engine/src"]
