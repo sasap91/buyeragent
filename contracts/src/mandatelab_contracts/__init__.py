@@ -1,3 +1,4 @@
+from mandatelab_contracts.interfaces import PreferenceProfileBuilder
 from mandatelab_contracts.models import (
     ApprovalRequirement,
     AuthorizationPolicy,
@@ -54,6 +55,7 @@ __all__ = [
     "Money",
     "PreferenceAttribute",
     "PreferenceDirection",
+    "PreferenceProfileBuilder",
     "PreferenceSignal",
     "PreferenceSource",
     "ProductCondition",

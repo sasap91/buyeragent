@@ -5,6 +5,7 @@ description = "MandateLab hackathon workspace"
 requires-python = ">=3.11"
 dependencies = [
     "mandatelab-contracts",
+    "mandatelab-engine",
 ]
 
 [dependency-groups]
@@ -17,13 +18,15 @@ package = false
 
 [tool.uv.sources]
 mandatelab-contracts = { workspace = true }
+mandatelab-engine = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "contracts",
+    "mandate_engine",
     "user_profile",
 ]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-pythonpath = ["contracts/src"]
+pythonpath = ["contracts/src", "mandate_engine/src"]

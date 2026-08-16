@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "buyer_id": "buyer-theo",
+  "category": "headphones",
+  "price_sensitivity": {
+    "value": "HIGH",
+    "numeric_weight": "0.88",
+    "source": "CATEGORY_HISTORY",
+    "confidence": "0.91"
+  },
+  "quality_importance": {
+    "value": "MEDIUM",
+    "numeric_weight": "0.62",
+    "source": "CATEGORY_HISTORY",
+    "confidence": "0.77"
+  },
+  "delivery_importance": {
+    "value": "MEDIUM",
+    "numeric_weight": "0.58",
+    "source": "GENERAL_HISTORY",
+    "confidence": "0.72"
+  },
+  "return_policy_importance": {
+    "value": "LOW",
+    "numeric_weight": "0.20",
+    "source": "CATEGORY_HISTORY",
+    "confidence": "0.69"
+  },
+  "merchant_trust_importance": {
+    "value": "LOW",
+    "numeric_weight": "0.30",
+    "source": "GENERAL_HISTORY",
+    "confidence": "0.64"
+  },
+  "preferred_brands": [
+    {
+      "value": "Soundcore",
+      "numeric_weight": "0.72",
+      "source": "CATEGORY_HISTORY",
+      "confidence": "0.83"
+    },
+    {
+      "value": "JBL",
+      "numeric_weight": "0.65",
+      "source": "CATEGORY_HISTORY",
+      "confidence": "0.76"
+    }
+  ],
+  "disliked_brands": [],
+  "condition_preferences": [
+    {
+      "value": "REFURBISHED",
+      "numeric_weight": "0.60",
+      "source": "CATEGORY_HISTORY",
+      "confidence": "0.74"
+    }
+  ],
+  "hard_rule_candidates": [],
+  "created_at": "2026-08-16T17:00:00Z"
+}
