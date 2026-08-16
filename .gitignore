@@ -9,3 +9,9 @@ wheels/
 # Virtual environments
 .venv
 .DS_Store
+
+# Real household purchase data -- never commit.
+# Contains actual order ids, dates and prices. Use the synthetic fixture in
+# buyer_history/fixtures/ for anything shared.
+transaction data/
+buyer_history/data/
