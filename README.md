@@ -62,6 +62,7 @@ Preference precedence, highest first:
 
 ```
 contracts/        mandatelab_contracts  — shared schemas, the integration seam
+api/              mandatelab_api        — versioned FastAPI composition routes
 mandate_engine/   mandatelab_engine     — mandates, constraints, decisions, pre-checkout
 sandbox_executor/ mandatelab_sandbox_executor — guarded transaction execution
 buyer_history/    buyer_history         — preference learning from purchase history
@@ -99,6 +100,13 @@ The comparison UI:
 
 ```bash
 cd user_profile/frontend && npm install && npm run dev
+```
+
+The composition API:
+
+```bash
+uv run mandatelab-api
+# OpenAPI: http://127.0.0.1:8000/docs
 ```
 
 ---
