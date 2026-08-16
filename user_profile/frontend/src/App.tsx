@@ -1,31 +1,44 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchPairs, updateModel } from './api'
 import './App.css'
-import { ComparisonView } from './components/ComparisonView'
 import { ModelPanel } from './components/ModelPanel'
+import { ProductList } from './components/ProductList'
 import { Results } from './components/Results'
-import type {
-  ComparisonAnswer,
-  ComparisonCatalog,
-  ComparisonChoice,
-  ModelSnapshot,
-} from './types'
+import type { ComparisonCatalog, ModelSnapshot, Product } from './types'
 
 const BUYER_ID = 'buyer-maya'
+const HOME_URL = import.meta.env.VITE_HOME_URL ?? 'http://127.0.0.1:8765'
+
+function uniqueProducts(catalog: ComparisonCatalog): Product[] {
+  const seen = new Map<string, Product>()
+  for (const pair of catalog.pairs) {
+    if (!seen.has(pair.left.id)) {
+      seen.set(pair.left.id, pair.left)
+    }
+    if (!seen.has(pair.right.id)) {
+      seen.set(pair.right.id, pair.right)
+    }
+  }
+  return [...seen.values()]
+}
 
 export default function App() {
   const [catalog, setCatalog] = useState<ComparisonCatalog | null>(null)
   const [catalogError, setCatalogError] = useState<string | null>(null)
-  const [index, setIndex] = useState(0)
-  const [comparisons, setComparisons] = useState<ComparisonAnswer[]>([])
+  const [rejectedIds, setRejectedIds] = useState<string[]>([])
   const [done, setDone] = useState(false)
   const [model, setModel] = useState<ModelSnapshot | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const demoPairs = useMemo(
-    () => (catalog ? catalog.pairs.slice(0, catalog.demo_pair_count) : []),
+  const catalogProducts = useMemo(
+    () => (catalog ? uniqueProducts(catalog) : []),
     [catalog],
+  )
+
+  const products = useMemo(
+    () => catalogProducts.filter((product) => !rejectedIds.includes(product.id)),
+    [catalogProducts, rejectedIds],
   )
 
   useEffect(() => {
@@ -42,7 +55,7 @@ export default function App() {
         if (controller.signal.aborted) {
           return
         }
-        setCatalogError(err instanceof Error ? err.message : 'Failed to load comparisons')
+        setCatalogError(err instanceof Error ? err.message : 'Failed to load products')
       })
     return () => controller.abort()
   }, [])
@@ -54,7 +67,7 @@ export default function App() {
     const controller = new AbortController()
     setLoading(true)
     setError(null)
-    updateModel(BUYER_ID, comparisons, controller.signal)
+    updateModel(BUYER_ID, rejectedIds, controller.signal)
       .then((snapshot) => {
         if (controller.signal.aborted) {
           return
@@ -70,36 +83,26 @@ export default function App() {
         setError(err instanceof Error ? err.message : 'Failed to update model')
       })
     return () => controller.abort()
-  }, [catalog, comparisons])
+  }, [catalog, rejectedIds])
 
-  const choose = (choice: ComparisonChoice) => {
-    const pair = demoPairs[index]
-    if (!pair) {
-      return
-    }
-    const next = [...comparisons, { pair_id: pair.pair_id, choice }]
-    setComparisons(next)
-    if (next.length >= demoPairs.length) {
-      setDone(true)
-    } else {
-      setIndex((current) => current + 1)
-    }
+  const remove = (id: string) => {
+    setRejectedIds((current) => (current.includes(id) ? current : [...current, id]))
   }
 
   const restart = () => {
-    setIndex(0)
-    setComparisons([])
+    setRejectedIds([])
     setDone(false)
     setModel(null)
     setError(null)
   }
 
-  const pair = demoPairs[index]
-
   return (
     <div className="app">
       <header className="app-header">
-        <h1>MandateLab · Cold start</h1>
+        <a className="home-btn" href={HOME_URL}>
+          Home
+        </a>
+        <h1>Path A · new buyer</h1>
       </header>
       <div className="app-body comparison-layout">
         {catalogError ? (
@@ -107,18 +110,13 @@ export default function App() {
         ) : done ? (
           <Results
             profile={model?.profile ?? null}
-            comparisons={comparisons}
+            rejectedCount={rejectedIds.length}
             onRestart={restart}
           />
-        ) : pair ? (
-          <ComparisonView
-            pair={pair}
-            index={index}
-            total={demoPairs.length}
-            onChoose={choose}
-          />
+        ) : catalog ? (
+          <ProductList products={products} onRemove={remove} onDone={() => setDone(true)} />
         ) : (
-          <p className="empty">Loading comparisons…</p>
+          <p className="empty">Loading products…</p>
         )}
         <ModelPanel model={model} loading={loading} error={error} />
       </div>

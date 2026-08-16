@@ -1,4 +1,4 @@
-import type { BuyerPreferenceProfile, ComparisonAnswer } from '../types'
+import type { BuyerPreferenceProfile } from '../types'
 
 function downloadProfile(profile: BuyerPreferenceProfile) {
   const blob = new Blob([JSON.stringify(profile, null, 2)], {
@@ -34,18 +34,18 @@ function SignalRow({
 
 export function Results({
   profile,
-  comparisons,
+  rejectedCount,
   onRestart,
 }: {
   profile: BuyerPreferenceProfile | null
-  comparisons: ComparisonAnswer[]
+  rejectedCount: number
   onRestart: () => void
 }) {
   if (!profile) {
     return (
       <div className="results">
         <h2>Building your profile…</h2>
-        <p className="results-summary">{comparisons.length} comparisons recorded</p>
+        <p className="results-summary">{rejectedCount} items rejected</p>
       </div>
     )
   }
@@ -69,7 +69,7 @@ export function Results({
     <div className="results">
       <h2>Buyer preference profile</h2>
       <p className="results-summary">
-        {comparisons.length} comparisons · {profile.buyer_id} · {profile.category}
+        {rejectedCount} items rejected · {profile.buyer_id} · {profile.category}
       </p>
       <div className="profile-grid">
         <SignalRow label="Price sensitivity" value={profile.price_sensitivity.value} />

@@ -1,14 +1,33 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --panel-2: #eef1f6;
+  --line: #dfe4ec;
+  --line-soft: #eaeef4;
+  --ink: #111823;
+  --ink-2: #48546a;
+  --ink-3: #7b8798;
+  --brand: #2f4bd8;
+  --brand-ink: #ffffff;
+  --brand-soft: #e7ebfc;
+  --ok: #0d6b55;
+  --ok-bg: #dcefe8;
+  --stop: #a32f2f;
+  --stop-bg: #f9e3e3;
+  --shadow: 0 1px 2px rgba(17, 24, 35, 0.05), 0 8px 24px -12px rgba(17, 24, 35, 0.16);
+  --r: 10px;
   font-family:
-    'Segoe UI',
-    system-ui,
+    ui-sans-serif,
     -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
     sans-serif;
-  line-height: 1.4;
+  line-height: 1.5;
   font-weight: 400;
-  color: #f4f1ea;
-  background: #12141a;
+  color: var(--ink);
+  background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -33,7 +52,8 @@ button {
   font-family: inherit;
 }
 
-button:focus-visible {
-  outline: 2px solid #f4f1ea;
-  outline-offset: 3px;
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }

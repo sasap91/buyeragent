@@ -1,4 +1,4 @@
-import type { ComparisonAnswer, ComparisonCatalog, ModelSnapshot } from './types'
+import type { ComparisonCatalog, ModelSnapshot } from './types'
 
 export async function fetchPairs(signal?: AbortSignal): Promise<ComparisonCatalog> {
   const response = await fetch('/api/pairs', { signal })
@@ -11,7 +11,7 @@ export async function fetchPairs(signal?: AbortSignal): Promise<ComparisonCatalo
 
 export async function updateModel(
   buyerId: string,
-  comparisons: ComparisonAnswer[],
+  rejectedProductIds: string[],
   signal?: AbortSignal,
 ): Promise<ModelSnapshot> {
   const response = await fetch('/api/update', {
@@ -19,7 +19,7 @@ export async function updateModel(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       buyer_id: buyerId,
-      comparisons,
+      rejected_product_ids: rejectedProductIds,
     }),
     signal,
   })

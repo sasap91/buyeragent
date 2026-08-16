@@ -15,3 +15,4 @@ wheels/
 # buyer_history/fixtures/ for anything shared.
 transaction data/
 buyer_history/data/
+.cursor

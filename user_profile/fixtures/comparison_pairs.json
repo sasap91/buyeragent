@@ -249,6 +249,192 @@
         "return_window_days": 30,
         "merchant": "Sound Depot"
       }
+    },
+    {
+      "pair_id": "jbl-vs-sony-budget",
+      "tradeoff": "brand_vs_price",
+      "prompt": "A cheaper Sony, or a budget JBL with similar ANC?",
+      "left": {
+        "id": "jbl-tune-770nc",
+        "name": "JBL Tune 770NC",
+        "category": "headphones",
+        "brand": "JBL",
+        "price": 79.95,
+        "quality": 0.55,
+        "sustainability": 0.32,
+        "condition": "NEW",
+        "delivery_days": 4,
+        "return_window_days": 30,
+        "merchant": "Value Electronics"
+      },
+      "right": {
+        "id": "sony-wh-ch720n",
+        "name": "Sony WH-CH720N",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 89.99,
+        "quality": 0.62,
+        "sustainability": 0.38,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      }
+    },
+    {
+      "pair_id": "soundcore-vs-ath",
+      "tradeoff": "price_vs_quality",
+      "prompt": "Inexpensive everyday ANC, or studio cans with better sound?",
+      "left": {
+        "id": "soundcore-life-q30",
+        "name": "Anker Soundcore Life Q30",
+        "category": "headphones",
+        "brand": "Soundcore",
+        "price": 79.99,
+        "quality": 0.58,
+        "sustainability": 0.4,
+        "condition": "NEW",
+        "delivery_days": 5,
+        "return_window_days": 30,
+        "merchant": "Value Electronics"
+      },
+      "right": {
+        "id": "audio-technica-ath-m50x",
+        "name": "Audio-Technica ATH-M50x",
+        "category": "headphones",
+        "brand": "Audio-Technica",
+        "price": 149.0,
+        "quality": 0.84,
+        "sustainability": 0.52,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "Sound Depot"
+      }
+    },
+    {
+      "pair_id": "skullcandy-vs-jabra",
+      "tradeoff": "brand_vs_price",
+      "prompt": "Bass-heavy Skullcandy, or more polished Jabra at a higher price?",
+      "left": {
+        "id": "skullcandy-crusher-evo",
+        "name": "Skullcandy Crusher Evo",
+        "category": "headphones",
+        "brand": "Skullcandy",
+        "price": 149.99,
+        "quality": 0.6,
+        "sustainability": 0.28,
+        "condition": "NEW",
+        "delivery_days": 6,
+        "return_window_days": 15,
+        "merchant": "Value Electronics"
+      },
+      "right": {
+        "id": "jabra-elite-85h",
+        "name": "Jabra Elite 85h",
+        "category": "headphones",
+        "brand": "Jabra",
+        "price": 199.99,
+        "quality": 0.76,
+        "sustainability": 0.44,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      }
+    },
+    {
+      "pair_id": "bose-ultra-vs-bw",
+      "tradeoff": "brand_vs_brand",
+      "prompt": "Bose comfort, or Bowers & Wilkins sound at a similar premium?",
+      "left": {
+        "id": "bose-quietcomfort-ultra",
+        "name": "Bose QuietComfort Ultra",
+        "category": "headphones",
+        "brand": "Bose",
+        "price": 429.0,
+        "quality": 0.92,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 2,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "bowers-wilkins-px7-s2e",
+        "name": "Bowers & Wilkins Px7 S2e",
+        "category": "headphones",
+        "brand": "Bowers & Wilkins",
+        "price": 349.0,
+        "quality": 0.9,
+        "sustainability": 0.58,
+        "condition": "NEW",
+        "delivery_days": 4,
+        "return_window_days": 30,
+        "merchant": "Sound Depot"
+      }
+    },
+    {
+      "pair_id": "focal-vs-bose-ultra",
+      "tradeoff": "price_vs_quality",
+      "prompt": "Luxury Focal at a steep price, or excellent Bose for less?",
+      "left": {
+        "id": "focal-bathys",
+        "name": "Focal Bathys",
+        "category": "headphones",
+        "brand": "Focal",
+        "price": 699.0,
+        "quality": 0.97,
+        "sustainability": 0.62,
+        "condition": "NEW",
+        "delivery_days": 5,
+        "return_window_days": 14,
+        "merchant": "Sound Depot"
+      },
+      "right": {
+        "id": "bose-quietcomfort-ultra",
+        "name": "Bose QuietComfort Ultra",
+        "category": "headphones",
+        "brand": "Bose",
+        "price": 429.0,
+        "quality": 0.92,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 2,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      }
+    },
+    {
+      "pair_id": "new-vs-refurb-bose",
+      "tradeoff": "new_vs_refurbished",
+      "prompt": "Brand-new Bose Ultra, or a refurbished QuietComfort 45?",
+      "left": {
+        "id": "bose-quietcomfort-ultra",
+        "name": "Bose QuietComfort Ultra",
+        "category": "headphones",
+        "brand": "Bose",
+        "price": 429.0,
+        "quality": 0.92,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 2,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "bose-qc45-refurbished",
+        "name": "Bose QuietComfort 45",
+        "category": "headphones",
+        "brand": "Bose",
+        "price": 179.99,
+        "quality": 0.8,
+        "sustainability": 0.48,
+        "condition": "REFURBISHED",
+        "delivery_days": 3,
+        "return_window_days": 90,
+        "merchant": "Renewed Audio"
+      }
     }
   ]
 }

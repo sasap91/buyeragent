@@ -174,3 +174,49 @@ def observations_from_comparisons(
             observations.append((pair.left, False))
             observations.append((pair.right, False))
     return observations
+
+
+def unknown_product_ids(
+    product_ids: Sequence[str],
+    catalog: ComparisonCatalog,
+) -> list[str]:
+    known = {product.id for product in catalog.products()}
+    seen: set[str] = set()
+    unknown: list[str] = []
+    for item_id in product_ids:
+        if item_id in known or item_id in seen:
+            continue
+        seen.add(item_id)
+        unknown.append(item_id)
+    return unknown
+
+
+def comparisons_from_rejected_ids(
+    rejected_ids: Sequence[str],
+    catalog: ComparisonCatalog,
+) -> list[ComparisonResponse]:
+    """Map item-level nos onto LEFT/RIGHT/NEITHER for the profile builder."""
+    rejected = set(rejected_ids)
+    responses: list[ComparisonResponse] = []
+    for pair in catalog.pairs:
+        left_no = pair.left.id in rejected
+        right_no = pair.right.id in rejected
+        if left_no and right_no:
+            choice = ComparisonChoice.NEITHER
+        elif left_no:
+            choice = ComparisonChoice.RIGHT
+        elif right_no:
+            choice = ComparisonChoice.LEFT
+        else:
+            continue
+        responses.append(ComparisonResponse(pair_id=pair.pair_id, choice=choice))
+    return responses
+
+
+def observations_from_rejected_ids(
+    rejected_ids: Sequence[str],
+    catalog: ComparisonCatalog,
+) -> list[tuple[Product, bool]]:
+    """Label every catalog product: rejected is no, remaining is kept."""
+    rejected = set(rejected_ids)
+    return [(product, product.id not in rejected) for product in catalog.products()]

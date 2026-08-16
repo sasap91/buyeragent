@@ -5,7 +5,10 @@ from __future__ import annotations
 from user_profile.comparisons import (
     ComparisonChoice,
     ComparisonResponse,
+    comparisons_from_rejected_ids,
     load_comparison_catalog,
+    observations_from_rejected_ids,
+    unknown_product_ids,
 )
 from user_profile.contract import ColdStartProfileBuilder
 from mandatelab_contracts import ImportanceLevel, ProductCondition
@@ -21,7 +24,7 @@ def _profile(pair_id: str, choice: str):
 def test_catalog_has_demo_and_stretch_pairs() -> None:
     catalog = load_comparison_catalog()
     assert catalog.demo_pair_count == 5
-    assert len(catalog.pairs) == 8
+    assert len(catalog.pairs) == 14
     assert {pair.pair_id for pair in catalog.demo_pairs()} == {
         "price-vs-quality",
         "brand-vs-price",
@@ -99,3 +102,38 @@ def test_unanswered_axes_stay_unknown() -> None:
     assert profile.delivery_importance.value is ImportanceLevel.UNKNOWN
     assert profile.return_policy_importance.value is ImportanceLevel.UNKNOWN
     assert profile.merchant_trust_importance.value is ImportanceLevel.UNKNOWN
+
+
+def test_unknown_product_ids_are_reported() -> None:
+    catalog = load_comparison_catalog()
+    assert unknown_product_ids(["generic-anc-100", "not-a-product"], catalog) == [
+        "not-a-product"
+    ]
+
+
+def test_rejected_ids_synthesize_pair_choices() -> None:
+    catalog = load_comparison_catalog()
+    responses = comparisons_from_rejected_ids(["generic-anc-100"], catalog)
+    by_pair = {item.pair_id: item.choice for item in responses}
+    assert by_pair["price-vs-quality"] is ComparisonChoice.RIGHT
+    assert "brand-vs-price" not in by_pair
+
+    neither = comparisons_from_rejected_ids(
+        ["generic-anc-100", "sony-wh-1000xm5"], catalog
+    )
+    by_pair = {item.pair_id: item.choice for item in neither}
+    assert by_pair["price-vs-quality"] is ComparisonChoice.NEITHER
+    assert by_pair["brand-vs-price"] is ComparisonChoice.RIGHT
+
+
+def test_rejected_ids_label_catalog_products() -> None:
+    catalog = load_comparison_catalog()
+    labels = {
+        product.id: bought
+        for product, bought in observations_from_rejected_ids(
+            ["generic-anc-100"], catalog
+        )
+    }
+    assert labels["generic-anc-100"] is False
+    assert labels["sony-wh-1000xm5"] is True
+    assert len(labels) == len(catalog.products())

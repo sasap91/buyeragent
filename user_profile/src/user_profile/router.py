@@ -13,10 +13,14 @@ from mandatelab_contracts import BuyerPreferenceProfile
 from user_profile.comparisons import (
     ComparisonChoice,
     ComparisonResponse,
+    comparisons_from_rejected_ids,
     load_comparison_catalog,
     observations_from_comparisons,
+    observations_from_rejected_ids,
+    unknown_product_ids,
 )
 from user_profile.contract import ColdStartProfileBuilder
+from user_profile.product import Product
 
 router = APIRouter(tags=["cold-start"])
 
@@ -36,6 +40,7 @@ class UpdateRequest(ApiModel):
     buyer_id: str = "buyer-maya"
     category: str | None = None
     comparisons: list[ComparisonResponseBody] = Field(default_factory=list)
+    rejected_product_ids: list[str] = Field(default_factory=list)
     include_model: bool = True
 
 
@@ -65,7 +70,7 @@ def _figure_to_base64(axes) -> str:
 
 
 def _model_snapshot(
-    responses: list[ComparisonResponse],
+    observations: list[tuple[Product, bool]],
 ) -> tuple[list[WeightRow], ModelPlots | None]:
     import matplotlib
 
@@ -78,7 +83,6 @@ def _model_snapshot(
         return [], None
 
     model = UserPreferenceModel(catalog)
-    observations = observations_from_comparisons(responses, _CATALOG.pair_map())
     if observations:
         model.fit(observations)
 
@@ -114,16 +118,31 @@ def get_pairs() -> dict[str, object]:
 
 @router.post("/api/update", response_model=UpdateResponse)
 def update_profile(request: UpdateRequest) -> UpdateResponse:
-    responses = [
-        ComparisonResponse(pair_id=item.pair_id, choice=item.choice)
-        for item in request.comparisons
-    ]
-    unknown = [item.pair_id for item in responses if item.pair_id not in _CATALOG.pair_map()]
-    if unknown:
-        raise HTTPException(
-            status_code=400,
-            detail=f"unknown comparison pair(s): {', '.join(unknown)}",
+    if request.rejected_product_ids:
+        unknown = unknown_product_ids(request.rejected_product_ids, _CATALOG)
+        if unknown:
+            raise HTTPException(
+                status_code=400,
+                detail=f"unknown product id(s): {', '.join(unknown)}",
+            )
+        responses = comparisons_from_rejected_ids(request.rejected_product_ids, _CATALOG)
+        observations = observations_from_rejected_ids(
+            request.rejected_product_ids, _CATALOG
         )
+    else:
+        responses = [
+            ComparisonResponse(pair_id=item.pair_id, choice=item.choice)
+            for item in request.comparisons
+        ]
+        unknown_pairs = [
+            item.pair_id for item in responses if item.pair_id not in _CATALOG.pair_map()
+        ]
+        if unknown_pairs:
+            raise HTTPException(
+                status_code=400,
+                detail=f"unknown comparison pair(s): {', '.join(unknown_pairs)}",
+            )
+        observations = observations_from_comparisons(responses, _CATALOG.pair_map())
 
     builder = ColdStartProfileBuilder(
         buyer_id=request.buyer_id,
@@ -136,7 +155,7 @@ def update_profile(request: UpdateRequest) -> UpdateResponse:
     plots: ModelPlots | None = None
     if request.include_model:
         try:
-            weights, plots = _model_snapshot(responses)
+            weights, plots = _model_snapshot(observations)
         except Exception:
             weights, plots = [], None
 

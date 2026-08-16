@@ -282,7 +282,7 @@ def test_cold_start_pairs_route_returns_headphones_catalog(client: TestClient) -
     payload = response.json()
     assert payload["category"] == "headphones"
     assert payload["demo_pair_count"] == 5
-    assert len(payload["pairs"]) == 8
+    assert len(payload["pairs"]) == 14
     first = payload["pairs"][0]
     assert {"pair_id", "tradeoff", "prompt", "left", "right"} <= set(first)
     assert first["left"]["condition"]
@@ -319,6 +319,36 @@ def test_cold_start_update_rejects_unknown_pairs(client: TestClient) -> None:
             "buyer_id": "buyer-maya",
             "include_model": False,
             "comparisons": [{"pair_id": "not-a-pair", "choice": "LEFT"}],
+        },
+    )
+    assert response.status_code == 400
+
+
+def test_cold_start_update_accepts_rejected_product_ids(client: TestClient) -> None:
+    response = client.post(
+        "/api/update",
+        json={
+            "buyer_id": "buyer-maya",
+            "include_model": False,
+            "rejected_product_ids": ["generic-anc-100"],
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    profile = BuyerPreferenceProfile.model_validate(body["profile"])
+    assert profile.buyer_id == "buyer-maya"
+    assert profile.category == "headphones"
+    assert profile.quality_importance.value.value == "HIGH"
+    assert profile.price_sensitivity.value.value == "LOW"
+
+
+def test_cold_start_update_rejects_unknown_product_ids(client: TestClient) -> None:
+    response = client.post(
+        "/api/update",
+        json={
+            "buyer_id": "buyer-maya",
+            "include_model": False,
+            "rejected_product_ids": ["not-a-product"],
         },
     )
     assert response.status_code == 400

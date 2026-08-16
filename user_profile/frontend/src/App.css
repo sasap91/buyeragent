@@ -20,16 +20,39 @@
 }
 
 .app-header {
-  margin-bottom: 1rem;
+  width: min(100%, 84rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 0.8rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #c9c3b8;
+  color: var(--ink-3);
   font-weight: 600;
+}
+
+.home-btn {
+  appearance: none;
+  text-decoration: none;
+  display: inline-block;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.home-btn:hover {
+  background: var(--panel-2);
 }
 
 .product-list {
@@ -71,25 +94,25 @@
   width: 2.1rem;
   height: 2.1rem;
   border-radius: 50%;
-  border: 1px solid #5a3030;
-  background: #2a1c1c;
-  color: #ff6b6b;
+  border: 1px solid var(--stop);
+  background: var(--stop-bg);
+  color: var(--stop);
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .remove-btn:hover {
-  background: #3a2222;
+  filter: brightness(0.97);
 }
 
 .product-card {
   position: relative;
   padding: 1.75rem 1.6rem;
-  border-radius: 1.4rem;
-  background: linear-gradient(180deg, #1e222c 0%, #181b22 100%);
-  border: 1px solid #2c313c;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 1.1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -98,8 +121,8 @@
   margin-bottom: 0.85rem;
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  background: #2a3140;
-  color: #d7c9a3;
+  background: var(--brand-soft);
+  color: var(--brand);
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -113,7 +136,7 @@
 
 .card-brand {
   margin: 0 0 1.1rem;
-  color: #9a948a;
+  color: var(--ink-3);
 }
 
 .card-price {
@@ -134,8 +157,8 @@
 .card-meta li {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  background: #2a3140;
-  color: #c9c3b8;
+  background: var(--panel-2);
+  color: var(--ink-2);
   font-size: 0.75rem;
 }
 
@@ -151,7 +174,7 @@
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #c9c3b8;
+  color: var(--ink-3);
 }
 
 .comparison-prompt {
@@ -176,7 +199,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #d7c9a3;
+  color: var(--brand);
 }
 
 .comparison-actions {
@@ -189,16 +212,25 @@
   padding: 0.7rem 1.15rem;
   border-radius: 999px;
   border: 0;
-  background: #f4f1ea;
-  color: #12141a;
+  background: var(--brand);
+  color: var(--brand-ink);
   font-weight: 600;
   cursor: pointer;
 }
 
+.choice-btn:hover {
+  filter: brightness(1.06);
+}
+
 .choice-btn.ghost {
-  background: transparent;
-  color: #f4f1ea;
-  border: 1px solid #4a4f5a;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.choice-btn.ghost:hover {
+  background: var(--panel-2);
+  filter: none;
 }
 
 .profile-grid {
@@ -213,12 +245,12 @@
   gap: 0.75rem;
   padding: 0.45rem 0.7rem;
   border-radius: 0.7rem;
-  background: #181b22;
-  border: 1px solid #2c313c;
+  background: var(--panel);
+  border: 1px solid var(--line);
 }
 
 .profile-label {
-  color: #c9c3b8;
+  color: var(--ink-3);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -230,7 +262,7 @@
 
 .profile-extra {
   margin-left: 0.4rem;
-  color: #9a948a;
+  color: var(--ink-3);
   font-weight: 400;
 }
 
@@ -243,28 +275,29 @@
   justify-content: space-between;
   margin-bottom: 0.35rem;
   font-size: 0.85rem;
-  color: #c9c3b8;
+  color: var(--ink-2);
 }
 
 .score-bar-track {
   height: 0.45rem;
   border-radius: 999px;
-  background: #2a3140;
+  background: var(--panel-2);
   overflow: hidden;
 }
 
 .score-bar-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #d7c9a3, #f0e6cc);
+  background: var(--brand);
 }
 
 .model-panel {
   min-width: 0;
   padding: 1.25rem 1.2rem 1.5rem;
-  border-radius: 1.2rem;
-  background: #181b22;
-  border: 1px solid #2c313c;
+  border-radius: 1.1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .model-panel h2 {
@@ -272,7 +305,7 @@
   font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #c9c3b8;
+  color: var(--ink-3);
 }
 
 .model-panel h3 {
@@ -280,7 +313,7 @@
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #c9c3b8;
+  color: var(--ink-3);
 }
 
 .model-status,
@@ -290,14 +323,14 @@
 }
 
 .model-error {
-  color: #ff6b6b;
+  color: var(--stop);
 }
 
 .weight-table-wrap {
   max-height: 16rem;
   overflow: auto;
   border-radius: 0.7rem;
-  border: 1px solid #2c313c;
+  border: 1px solid var(--line);
 }
 
 .weight-table {
@@ -308,12 +341,12 @@
 
 .weight-table td {
   padding: 0.35rem 0.65rem;
-  border-bottom: 1px solid #2c313c;
+  border-bottom: 1px solid var(--line-soft);
   vertical-align: top;
 }
 
 .weight-table td:first-child {
-  color: #d7c9a3;
+  color: var(--brand);
   word-break: break-word;
 }
 
@@ -328,7 +361,8 @@
   width: 100%;
   height: auto;
   border-radius: 0.7rem;
-  background: #f4f1ea;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
 }
 
 .results {
@@ -342,7 +376,7 @@
 
 .results-summary {
   margin: 0 0 1.4rem;
-  color: #9a948a;
+  color: var(--ink-2);
 }
 
 .results-columns {
@@ -357,7 +391,7 @@
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #c9c3b8;
+  color: var(--ink-3);
 }
 
 .results ul {
@@ -371,7 +405,7 @@
 
 .empty {
   margin: 0;
-  color: #6f6a62;
+  color: var(--ink-3);
 }
 
 .results-json {
@@ -380,10 +414,10 @@
   max-height: 16rem;
   overflow: auto;
   border-radius: 0.8rem;
-  background: #181b22;
-  border: 1px solid #2c313c;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   font-size: 0.8rem;
-  color: #d7c9a3;
+  color: var(--ink-2);
 }
 
 .results-actions {
@@ -396,16 +430,25 @@
   padding: 0.65rem 1.1rem;
   border-radius: 999px;
   border: 0;
-  background: #f4f1ea;
-  color: #12141a;
+  background: var(--brand);
+  color: var(--brand-ink);
   font-weight: 600;
   cursor: pointer;
 }
 
+.text-btn:hover {
+  filter: brightness(1.06);
+}
+
 .text-btn.ghost {
-  background: transparent;
-  color: #f4f1ea;
-  border: 1px solid #4a4f5a;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.text-btn.ghost:hover {
+  background: var(--panel-2);
+  filter: none;
 }
 
 @media (max-width: 840px) {
