@@ -40,6 +40,13 @@ class ImportanceLevel(str, Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
+    # UNKNOWN is not "no preference" -- it means the source data cannot speak to
+    # this attribute at all. A grocery purchase history carries no delivery or
+    # return-policy signal, so a profile built from it must be able to say so
+    # rather than assert LOW. PRD section 10 requires that uncertain data does
+    # not silently pass; ConstraintStatus already models this, and the profile
+    # layer needs the same. Pair with confidence=0.
+    UNKNOWN = "UNKNOWN"
 
 
 class PreferenceSource(str, Enum):
