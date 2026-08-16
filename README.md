@@ -84,6 +84,7 @@ uv run pytest
 Demos:
 
 ```bash
+python3 examples/mvp_demo.py                 # complete safety + execution flow
 python3 buyer_history/examples/demo.py   # profile → prediction → update → trajectory
 python3 user_profile/examples/demo.py    # Pareto set + ranked feed per buyer
 ```
