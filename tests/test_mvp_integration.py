@@ -17,8 +17,14 @@ def test_same_catalog_ranks_different_products_for_two_buyers(
 ) -> None:
     ranking = result["buyer_specific_ranking"]
 
-    assert ranking["maya_top_candidate"] != ranking["theo_top_candidate"]
-    assert ranking["theo_top_candidate"] == "catalog-anker-q45-black"
+    assert ranking["maya_top_candidate"] != (
+        ranking["existing_buyer_top_candidate"]
+    )
+    assert ranking["existing_buyer_id"] == "synthetic_household"
+    assert ranking["existing_buyer_profile_category"] == "*"
+    assert ranking["existing_buyer_top_candidate"] == (
+        "catalog-sony-ult-wear-gray"
+    )
 
 
 def test_blocked_candidate_produces_a_successful_replan(
