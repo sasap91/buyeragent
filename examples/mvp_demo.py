@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 for source_directory in (
+    REPOSITORY_ROOT / "buyer_history" / "src",
     REPOSITORY_ROOT / "contracts" / "src",
     REPOSITORY_ROOT / "mandate_engine" / "src",
     REPOSITORY_ROOT / "sandbox_executor" / "src",
@@ -23,6 +24,8 @@ for source_directory in (
     if str(source_directory) not in sys.path:
         sys.path.insert(0, str(source_directory))
 
+from buyer_history import build_profile_from_workbook
+from buyer_history.contract import PurchaseHistoryProfileBuilder
 from mandatelab_contracts import (
     AuthorizationPolicy,
     BuyerPreferenceProfile,
@@ -60,16 +63,25 @@ MAYA_PROFILE_PATH = (
     / "examples"
     / "buyer_preference_profile.json"
 )
-THEO_PROFILE_PATH = (
+HISTORY_WORKBOOK_PATH = (
     REPOSITORY_ROOT
-    / "mandate_engine"
+    / "buyer_history"
     / "fixtures"
-    / "existing_buyer_profile.json"
+    / "synthetic_household.xlsx"
 )
 
 
 def _load_profile(path: Path) -> BuyerPreferenceProfile:
     return BuyerPreferenceProfile.model_validate_json(path.read_text())
+
+
+def _load_existing_buyer_profile() -> BuyerPreferenceProfile:
+    bundle = build_profile_from_workbook(
+        HISTORY_WORKBOOK_PATH,
+        buyer_id="synthetic_household",
+        as_of=date(2026, 8, 16),
+    )
+    return PurchaseHistoryProfileBuilder().build_profile(bundle)
 
 
 def _load_catalog() -> list[TransactionCandidate]:
@@ -149,7 +161,7 @@ def run_demo() -> dict[str, Any]:
         candidate.candidate_id: candidate for candidate in catalog
     }
     maya = _load_profile(MAYA_PROFILE_PATH)
-    theo = _load_profile(THEO_PROFILE_PATH)
+    existing_buyer = _load_existing_buyer_profile()
 
     maya_comparison_mandate = parse_mandate(
         _intent(
@@ -161,21 +173,21 @@ def run_demo() -> dict[str, Any]:
         maya,
         mandate_id="mandate-maya-comparison",
     )
-    theo_comparison_mandate = parse_mandate(
+    existing_buyer_mandate = parse_mandate(
         _intent(
-            theo,
-            intent_id="intent-theo-comparison",
+            existing_buyer,
+            intent_id="intent-existing-buyer-comparison",
             autonomous="600",
             maximum="600",
         ),
-        theo,
-        mandate_id="mandate-theo-comparison",
+        existing_buyer,
+        mandate_id="mandate-existing-buyer-comparison",
     )
     maya_ranking = rank_candidates(
         catalog, maya_comparison_mandate, maya
     )
-    theo_ranking = rank_candidates(
-        catalog, theo_comparison_mandate, theo
+    existing_buyer_ranking = rank_candidates(
+        catalog, existing_buyer_mandate, existing_buyer
     )
 
     autonomous_mandate = parse_mandate(
@@ -293,8 +305,14 @@ def run_demo() -> dict[str, Any]:
         "buyer_specific_ranking": {
             "maya_top_candidate": maya_ranking[0].candidate.candidate_id,
             "maya_score": str(maya_ranking[0].explanation.total_score),
-            "theo_top_candidate": theo_ranking[0].candidate.candidate_id,
-            "theo_score": str(theo_ranking[0].explanation.total_score),
+            "existing_buyer_id": existing_buyer.buyer_id,
+            "existing_buyer_profile_category": existing_buyer.category,
+            "existing_buyer_top_candidate": (
+                existing_buyer_ranking[0].candidate.candidate_id
+            ),
+            "existing_buyer_score": str(
+                existing_buyer_ranking[0].explanation.total_score
+            ),
         },
         "blocked_and_replanned": {
             "blocked_candidate": rejected_candidate.candidate_id,
