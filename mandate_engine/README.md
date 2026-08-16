@@ -1,8 +1,8 @@
 # MandateLab engine
 
-This package currently contains only deterministic hard-constraint evaluation.
-It does not make `APPROVE`, `REVIEW`, or `BLOCK` decisions and does not rank or
-execute candidates.
+This package contains deterministic mandate conversion, constraint evaluation,
+authorization decisions, final pre-checkout validation, and buyer-specific
+ranking. Sandbox transaction execution remains a separate package.
 
 ## Constraint contract
 
@@ -91,3 +91,17 @@ total. It cannot override `BLOCK`, a required `UNKNOWN`, missing final price, or
 material mandate ambiguity. A changed cart, stale fingerprint, expired approval,
 future-dated approval, or identifier mismatch returns `REVIEW` and requires a new
 exact-cart approval.
+
+## Buyer-specific ranking
+
+`rank_candidates(candidates, mandate, profile)` first removes candidates whose
+hard constraints are not all `PASS`, whose final price is unknown, or whose price
+exceeds maximum authority. It then produces a deterministic weighted score and
+`RankingExplanation` for each remaining candidate.
+
+Current mandate soft preferences replace learned profile signals for the same
+attribute. Profile ranking uses available evidence for price, preferred or
+disliked brands, condition, delivery, and return policy. Explicit preferences
+may also target merchant or required quality features. Components that cannot be
+observed are omitted rather than guessed, and remaining weights are normalized.
+Equal scores use `candidate_id` as the stable tie-breaker.

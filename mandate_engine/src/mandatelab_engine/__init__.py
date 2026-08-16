@@ -34,10 +34,17 @@ from mandatelab_engine.precheckout import (
     compute_cart_fingerprint,
     validate_precheckout,
 )
+from mandatelab_engine.ranking import (
+    RankedCandidate,
+    RankingError,
+    rank_candidates,
+)
 
 __all__ = [
     "ConstraintDefinitionError",
     "MandateConversionError",
+    "RankingError",
+    "RankedCandidate",
     "AUTONOMOUS_SPEND_LIMIT_EXCEEDED",
     "AUTHORIZATION_DEFAULTED_FROM_POLICY",
     "AUTHORIZATION_MISSING_SAFE_ZERO_APPLIED",
@@ -63,5 +70,6 @@ __all__ = [
     "evaluate_candidate",
     "is_feasible",
     "parse_mandate",
+    "rank_candidates",
     "validate_precheckout",
 ]
