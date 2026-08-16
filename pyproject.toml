@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "mandatelab-contracts",
     "mandatelab-engine",
+    "mandatelab-sandbox-executor",
 ]
 
 [dependency-groups]
@@ -19,14 +20,16 @@ package = false
 [tool.uv.sources]
 mandatelab-contracts = { workspace = true }
 mandatelab-engine = { workspace = true }
+mandatelab-sandbox-executor = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "contracts",
     "mandate_engine",
+    "sandbox_executor",
     "user_profile",
 ]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-pythonpath = ["contracts/src", "mandate_engine/src"]
+pythonpath = ["contracts/src", "mandate_engine/src", "sandbox_executor/src"]
