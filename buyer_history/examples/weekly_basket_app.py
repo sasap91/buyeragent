@@ -25,7 +25,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
-for _pkg in ("buyer_history", "contracts", "mandate_engine", "weee_cart", "user_profile"):
+for _pkg in ("buyer_history", "contracts", "mandate_engine", "weee_cart"):
     sys.path.insert(0, str(ROOT / _pkg / "src"))
 
 from buyer_history import build_profile_from_workbook  # noqa: E402
@@ -48,33 +48,18 @@ except Exception as exc:  # pragma: no cover
     CART_READY = False
     CART_ERROR = str(exc)
 
-# Path A. Cold start needs the contracts, but not the ML stack behind the
-# plotting model, so it loads independently of the cart.
-try:
-    from user_profile.comparisons import (
-        ComparisonChoice,
-        ComparisonResponse,
-        load_comparison_catalog,
-    )
-    from user_profile.contract import to_contract_profile as coldstart_profile
-
-    CATALOG = load_comparison_catalog()
-    COLDSTART_READY = True
-    COLDSTART_ERROR = ""
-except Exception as exc:  # pragma: no cover
-    CATALOG = None
-    COLDSTART_READY = False
-    COLDSTART_ERROR = str(exc)
-
 FIXTURE = ROOT / "buyer_history" / "fixtures" / "synthetic_household.xlsx"
 PORT = 8765
 TODAY = date(2026, 8, 16)
+PATH_A_URL = "http://127.0.0.1:5173"
 
 _paths = [a for a in sys.argv[1:] if not a.startswith("--")]
 WORKBOOK = Path(_paths[0]) if _paths else FIXTURE
 for _arg in sys.argv[1:]:
     if _arg.startswith("--today="):
         TODAY = date.fromisoformat(_arg.split("=", 1)[1])
+    elif _arg.startswith("--path-a-url="):
+        PATH_A_URL = _arg.split("=", 1)[1]
 
 print(f"Loading profile from {WORKBOOK.name} …")
 BUNDLE = build_profile_from_workbook(WORKBOOK, buyer_id="household", as_of=TODAY)
@@ -138,6 +123,7 @@ PAGE = r"""<!doctype html>
   .btn:active { transform:translateY(1px); }
   .btn:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
   .btn:disabled { opacity:.5; cursor:not-allowed; }
+  a.btn { text-decoration:none; display:inline-block; }
   .btn-primary { background:var(--brand); color:var(--brand-ink); }
   .btn-primary:hover:not(:disabled) { filter:brightness(1.08); }
   .btn-ghost { background:var(--panel); color:var(--ink); border-color:var(--line); }
@@ -157,38 +143,7 @@ PAGE = r"""<!doctype html>
   .tab:hover { color:var(--ink-2); }
   .tab.on { color:var(--brand); border-bottom-color:var(--brand); }
   .tab:focus-visible { outline:2px solid var(--brand); outline-offset:-3px; }
-
-  .pair { margin-top:20px; }
-  .pair-q { font-size:13.5px; color:var(--ink-2); margin:0 0 4px; }
-  .pair-t {
-    font:10.5px/1 ui-monospace,monospace; letter-spacing:.1em; text-transform:uppercase;
-    color:var(--ink-3); margin-bottom:9px;
-  }
-  .duo { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  @media (max-width:560px) { .duo { grid-template-columns:1fr; } }
-  .opt {
-    text-align:left; background:var(--panel); border:1px solid var(--line);
-    border-radius:var(--r); box-shadow:var(--shadow); padding:14px;
-    cursor:pointer; font:inherit; transition:border-color .12s, background .12s;
-  }
-  .opt:hover { border-color:var(--brand); }
-  .opt.picked { border-color:var(--brand); background:var(--brand-soft); }
-  .opt:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
-  .opt .t { font-weight:620; margin-bottom:3px; }
-  .opt .p { font:16px/1 ui-monospace,monospace; font-variant-numeric:tabular-nums; margin-bottom:7px; }
-  .opt .d { font-size:12px; color:var(--ink-3); line-height:1.5; }
-  .neither { display:flex; gap:8px; margin-top:9px; }
-  .neither button {
-    flex:1; appearance:none; background:var(--panel); border:1px solid var(--line);
-    border-radius:8px; padding:8px; font:inherit; font-size:12.5px;
-    color:var(--ink-2); cursor:pointer;
-  }
-  .neither button:hover { background:var(--panel-2); }
-  .neither button.picked { border-color:var(--brand); background:var(--brand-soft); color:var(--ink); }
-
-  .sig { display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; padding:11px 14px; }
-  .sig .k { font:12.5px ui-monospace,monospace; }
-  .sig .v { font-weight:620; font-size:13.5px; }
+  a.tab { text-decoration:none; }
 
   .summary {
     display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
@@ -300,20 +255,64 @@ PAGE = r"""<!doctype html>
   <div class="eyebrow">MandateLab</div>
 
   <nav class="tabs">
-    <button class="tab on" data-tab="b">Path B &middot; existing buyer</button>
-    <button class="tab" data-tab="a">Path A &middot; new buyer</button>
+    <button class="tab on" data-tab="how">How</button>
+    <a class="tab" href="__PATH_A_URL__">Path A &middot; new buyer</a>
+    <button class="tab" data-tab="b">Path B &middot; existing buyer</button>
   </nav>
 
-  <section id="pane-a" hidden>
-    <h1>Which would you pick?</h1>
-    <p class="lede">A buyer with no history still has preferences. Five trade-offs
-    &mdash; price against quality, brand against price, new against refurbished
-    &mdash; are enough to build the same profile the engine consumes.</p>
-    <div id="pairs"></div>
-    <div id="profile"></div>
+  <section id="pane-how">
+    <h1>How MandateLab works</h1>
+    <p class="lede">It learns what &ldquo;best&rdquo; means for you, turns that
+    into an explicit mandate, and only then lets an agent add to a cart.
+    Nothing is checked out without you.</p>
+
+    <div class="toolbar">
+      <a class="btn btn-primary" href="__PATH_A_URL__">Start as a new buyer</a>
+      <button class="btn btn-ghost" data-goto="b">Plan this week</button>
+    </div>
+
+    <section class="group">
+      <div class="group-head"><h2>Two ways in</h2></div>
+      <ul class="rows">
+        <li class="card">
+          <div class="line" style="grid-template-columns:1fr auto">
+            <div class="who">
+              <div class="nm">Path A &middot; new buyer</div>
+              <div class="sub">Five product comparisons. Enough to build the same
+              profile the engine consumes.</div>
+            </div>
+            <a class="btn btn-ghost btn-sm" href="__PATH_A_URL__">Open</a>
+          </div>
+        </li>
+        <li class="card">
+          <div class="line" style="grid-template-columns:1fr auto">
+            <div class="who">
+              <div class="nm">Path B &middot; existing buyer</div>
+              <div class="sub">Purchase history in, staples due this week out,
+              then into a real Weee! cart.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" data-goto="b">Open</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <p class="note">Every approved line still passes through the Decision Engine
+    before the browser sees it. The agent only ever adds to the cart.</p>
+
+    <details class="help">
+      <summary>How the browser works</summary>
+      <p>The first time you add items, a Chrome window opens and asks you to sign in
+      to Weee!. That sign-in is kept in a private profile at
+      <code>~/.mandatelab/weee-profile</code>, so every run after that goes straight
+      to your cart &mdash; no flags, no relaunching.</p>
+      <p>The agent never sees your password, and it only ever adds to the cart:
+      there is no checkout path anywhere in the code, so nothing can be bought
+      without you.</p>
+    </details>
   </section>
 
-  <section id="pane-b">
+  <section id="pane-b" hidden>
   <h1>What do we need this week?</h1>
   <p class="lede">Reads the learned purchase profile, works out which staples come
   due in the next seven days, then sends the ones you approve to your Weee! cart.</p>
@@ -327,17 +326,6 @@ PAGE = r"""<!doctype html>
 
   <div id="out"></div>
   <div id="cartout"></div>
-
-  <details class="help">
-    <summary>How the browser works</summary>
-    <p>The first time you add items, a Chrome window opens and asks you to sign in
-    to Weee!. That sign-in is kept in a private profile at
-    <code>~/.mandatelab/weee-profile</code>, so every run after that goes straight
-    to your cart &mdash; no flags, no relaunching.</p>
-    <p>The agent never sees your password, and it only ever adds to the cart:
-    there is no checkout path anywhere in the code, so nothing can be bought
-    without you.</p>
-  </details>
 
   </section>
   <footer id="foot"></footer>
@@ -650,160 +638,19 @@ async function refreshStatus() {
 refreshStatus();
 
 /* ---------------- tabs ---------------- */
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
-    const a = t.dataset.tab === 'a';
-    $('pane-a').hidden = !a;
-    $('pane-b').hidden = a;
-    dock.classList.toggle('on', !a && !!(BASKET && BASKET.count));
-    if (a && !PAIRS) loadPairs();
-  });
+function showTab(name) {
+  document.querySelectorAll('.tab[data-tab]').forEach(x =>
+    x.classList.toggle('on', x.dataset.tab === name));
+  $('pane-how').hidden = name !== 'how';
+  $('pane-b').hidden = name !== 'b';
+  dock.classList.toggle('on', name === 'b' && !!(BASKET && BASKET.count));
+}
+document.querySelectorAll('.tab[data-tab]').forEach(t => {
+  t.addEventListener('click', () => showTab(t.dataset.tab));
 });
-
-/* ---------------- Path A: pairwise comparisons ---------------- */
-const COLDSTART_READY = window.__COLDSTART_READY__ === true;
-let PAIRS = null;
-const answers = new Map();
-
-async function loadPairs() {
-  const host = $('pairs');
-  if (!COLDSTART_READY) {
-    host.innerHTML = '<p class="note warn">Cold start unavailable — run with .venv/bin/python.</p>';
-    return;
-  }
-  host.innerHTML = '<p class="empty">Loading comparisons…</p>';
-  try {
-    const data = await (await fetch('/api/pairs')).json();
-    if (data.error) { host.innerHTML = '<p class="note warn">' + esc(data.error) + '</p>'; return; }
-    PAIRS = data.pairs;
-    renderPairs(data);
-  } catch (err) {
-    host.innerHTML = '<p class="note warn">Could not load: ' + esc(err) + '</p>';
-  }
-}
-
-function spec(p) {
-  const bits = [esc(p.brand), 'quality ' + Math.round(p.quality * 100) + '%'];
-  if (p.condition) bits.push(esc(String(p.condition).toLowerCase()));
-  if (p.delivery_days != null) bits.push(p.delivery_days + '-day delivery');
-  if (p.return_window_days != null) bits.push(p.return_window_days + '-day returns');
-  if (p.merchant) bits.push(esc(p.merchant));
-  return bits.join(' · ');
-}
-
-function renderPairs(data) {
-  let html = '';
-  data.pairs.forEach((p, i) => {
-    html += '<div class="pair" data-pair="' + esc(p.pair_id) + '">' +
-      '<div class="pair-t">' + (i + 1) + ' of ' + data.pairs.length + ' &middot; ' +
-        esc(String(p.tradeoff).replace(/_/g, ' ')) + '</div>' +
-      '<p class="pair-q">' + esc(p.prompt) + '</p>' +
-      '<div class="duo">' +
-        ['LEFT', 'RIGHT'].map(side => {
-          const o = side === 'LEFT' ? p.left : p.right;
-          return '<button class="opt" data-choice="' + side + '">' +
-            '<div class="t">' + esc(o.name) + '</div>' +
-            '<div class="p">' + money(o.price) + '</div>' +
-            '<div class="d">' + spec(o) + '</div></button>';
-        }).join('') +
-      '</div>' +
-      '<div class="neither">' +
-        '<button data-choice="EITHER">Either is fine</button>' +
-        '<button data-choice="NEITHER">Neither</button>' +
-      '</div></div>';
-  });
-  html += '<div class="toolbar"><button class="btn btn-primary" id="build" disabled>' +
-    'Build profile</button><span class="status" id="progress"></span></div>';
-  $('pairs').innerHTML = html;
-
-  $('pairs').querySelectorAll('[data-choice]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const row = btn.closest('.pair');
-      row.querySelectorAll('[data-choice]').forEach(x => x.classList.remove('picked'));
-      btn.classList.add('picked');
-      answers.set(row.dataset.pair, btn.dataset.choice);
-      $('progress').textContent = answers.size + ' of ' + PAIRS.length + ' answered';
-      $('build').disabled = answers.size === 0;
-    });
-  });
-  $('build').addEventListener('click', buildProfile);
-}
-
-async function buildProfile() {
-  const b = $('build');
-  b.disabled = true;
-  b.innerHTML = '<span class="spin">&#9676;</span> Building…';
-  try {
-    const payload = {answers: Array.from(answers, ([pair_id, choice]) => ({pair_id, choice}))};
-    const data = await (await fetch('/api/coldstart', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload),
-    })).json();
-    if (data.error) {
-      $('profile').innerHTML = '<p class="note warn">' + esc(data.error) + '</p>';
-    } else {
-      renderProfile(data.profile);
-    }
-  } catch (err) {
-    $('profile').innerHTML = '<p class="note warn">' + esc(err) + '</p>';
-  } finally {
-    b.disabled = false;
-    b.textContent = 'Build profile';
-  }
-}
-
-function renderProfile(p) {
-  const rows = [
-    ['price sensitivity', p.price_sensitivity],
-    ['quality importance', p.quality_importance],
-    ['delivery importance', p.delivery_importance],
-    ['return policy', p.return_policy_importance],
-    ['merchant trust', p.merchant_trust_importance],
-  ];
-  let html = '<section class="group"><div class="group-head">' +
-    '<h2>BuyerPreferenceProfile</h2><span>' + esc(p.category) + '</span></div><ul class="rows">';
-  for (const [k, sig] of rows) {
-    if (!sig) continue;
-    html += '<li class="card"><div class="sig">' +
-      '<span class="k">' + k + '</span>' +
-      '<span class="v">' + esc(sig.value) + '</span>' +
-      '<span class="chip t-flat">' + esc(sig.source.toLowerCase().replace(/_/g, ' ')) +
-        ' &middot; ' + Math.round(Number(sig.confidence) * 100) + '%</span>' +
-      '</div></li>';
-  }
-  for (const b of (p.preferred_brands || [])) {
-    html += '<li class="card"><div class="sig"><span class="k">prefers brand</span>' +
-      '<span class="v">' + esc(b.value) + '</span>' +
-      '<span class="chip t-good">' + Math.round(Number(b.numeric_weight) * 100) + '%</span></div></li>';
-  }
-  for (const c of (p.condition_preferences || [])) {
-    html += '<li class="card"><div class="sig"><span class="k">condition</span>' +
-      '<span class="v">' + esc(c.value) + '</span>' +
-      '<span class="chip t-flat">' + esc(c.source.toLowerCase().replace(/_/g, ' ')) +
-      '</span></div></li>';
-  }
-  html += '</ul></section>';
-
-  const rules = p.hard_rule_candidates || [];
-  if (rules.length) {
-    html += '<section class="group"><div class="group-head"><h2>Proposed hard rules</h2>' +
-      '<span>needs your confirmation</span></div><ul class="rows">';
-    for (const r of rules) {
-      html += '<li class="card"><div class="sig">' +
-        '<span class="k">' + esc(r.kind) + ' ' + esc(r.operator) + ' ' +
-          esc(JSON.stringify(r.expected)) + '</span>' +
-        '<span class="v"></span>' +
-        '<span class="chip t-warn">confirm</span></div>' +
-        (r.rationale ? '<div class="why">' + esc(r.rationale) + '</div>' : '') +
-        '</li>';
-    }
-    html += '</ul><p class="note">A prohibition inferred from onboarding cannot block a ' +
-      'purchase until the buyer confirms it.</p></section>';
-  }
-  $('profile').innerHTML = html;
-  $('profile').scrollIntoView({behavior: 'smooth', block: 'start'});
-}
+document.querySelectorAll('[data-goto="b"]').forEach(btn => {
+  btn.addEventListener('click', () => showTab('b'));
+});
 </script>
 </body>
 </html>
@@ -875,17 +722,6 @@ def _run_cart_job(job_id: str, picked, dry_run: bool, horizon: int) -> None:
 CART_URL_FALLBACK = "https://www.sayweee.com/en/cart"
 
 
-def _product_dict(product) -> dict:
-    """The comparison fixture's product, as plain JSON for the page."""
-    fields = ("id", "name", "brand", "price", "quality", "sustainability",
-              "condition", "delivery_days", "return_window_days", "merchant")
-    out = {}
-    for field in fields:
-        value = getattr(product, field, None)
-        out[field] = value.value if hasattr(value, "value") else value
-    return out
-
-
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args) -> None:
         pass
@@ -903,10 +739,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         url = urlparse(self.path)
         if url.path == "/":
-            page = PAGE.replace(
+            page = PAGE.replace("__PATH_A_URL__", PATH_A_URL).replace(
                 "</head>",
-                f"<script>window.__CART_READY__ = {str(CART_READY).lower()};"
-                f"window.__COLDSTART_READY__ = {str(COLDSTART_READY).lower()};</script></head>",
+                f"<script>window.__CART_READY__ = {str(CART_READY).lower()};</script></head>",
             )
             self._send(200, page.encode(), "text/html; charset=utf-8")
             return
@@ -924,26 +759,6 @@ class Handler(BaseHTTPRequestHandler):
             self._json(job or {"done": True, "error": "unknown job"})
             return
 
-        if url.path == "/api/pairs":
-            if not COLDSTART_READY:
-                self._json({"error": COLDSTART_ERROR, "pairs": []})
-                return
-            pairs = list(CATALOG.pairs)[: CATALOG.demo_pair_count]
-            self._json({
-                "category": CATALOG.category,
-                "pairs": [
-                    {
-                        "pair_id": p.pair_id,
-                        "tradeoff": p.tradeoff,
-                        "prompt": p.prompt,
-                        "left": _product_dict(p.left),
-                        "right": _product_dict(p.right),
-                    }
-                    for p in pairs
-                ],
-            })
-            return
-
         if url.path == "/api/browser":
             if not CART_READY:
                 self._json({"running": False, "signed_in": None, "detail": CART_ERROR})
@@ -955,31 +770,6 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlparse(self.path).path
-
-        if path == "/api/coldstart":
-            length = int(self.headers.get("Content-Length", "0") or 0)
-            body = json.loads(self.rfile.read(length) or b"{}")
-            if not COLDSTART_READY:
-                self._json({"error": COLDSTART_ERROR})
-                return
-            try:
-                responses = [
-                    ComparisonResponse(
-                        pair_id=answer["pair_id"],
-                        choice=ComparisonChoice(answer["choice"]),
-                    )
-                    for answer in body.get("answers", [])
-                ]
-                profile = coldstart_profile(
-                    responses,
-                    buyer_id=body.get("buyer_id") or "new-buyer",
-                    category=CATALOG.category,
-                    catalog=CATALOG,
-                )
-                self._json({"profile": json.loads(profile.model_dump_json())})
-            except Exception as exc:
-                self._json({"error": f"{type(exc).__name__}: {exc}"})
-            return
 
         if path != "/api/cart":
             self._send(404, b"not found", "text/plain")

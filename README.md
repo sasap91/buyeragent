@@ -86,22 +86,18 @@ uv run pytest
 uv run python examples/mvp_demo.py      # the deterministic end-to-end flow
 ```
 
-The HTTP API:
+The UIs together (How + Path B at `:8765`, Path A at `:5173`, API at `:8000`):
 
 ```bash
-uv run uvicorn mandatelab_api:app --reload      # docs at /docs
+./dev.sh
 ```
 
-The comparison UI (cold start):
+Isolated processes, if you only need one of them:
 
 ```bash
-cd user_profile/frontend && npm install && npm run dev
-```
-
-The weekly basket UI (purchase history → a real cart):
-
-```bash
-python buyer_history/examples/weekly_basket_app.py      # http://127.0.0.1:8765
+uv run uvicorn mandatelab_api:app --reload              # docs at /docs
+cd user_profile/frontend && npm install && npm run dev  # Path A
+python buyer_history/examples/weekly_basket_app.py      # How + Path B
 ```
 
 `buyer_history` is stdlib-only, so its core also runs with no install at all:

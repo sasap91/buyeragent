@@ -4,10 +4,12 @@ version = "0.1.0"
 description = "MandateLab hackathon workspace"
 requires-python = ">=3.11"
 dependencies = [
+    "httpx2>=2.10.0",
     "mandatelab-api",
     "mandatelab-contracts",
     "mandatelab-engine",
     "mandatelab-sandbox-executor",
+    "starlette>=1.6.0",
     "user-profile",
 ]
 
