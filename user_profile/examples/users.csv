@@ -1,0 +1,4 @@
+id,name,price_weight,quality_weight,brand_weight,sustainability_weight,brand_affinities,max_price,min_quality
+maya,Maya,0.55,0.25,0.1,0.1,Generic:0.4|MrCoffee:0.5|EcoWare:0.3,150,
+jordan,Jordan,0.1,0.4,0.4,0.1,Sony:0.95|Nike:0.9|HydroFlask:0.7|Fellow:0.6,,0.7
+riley,Riley,0.15,0.2,0.15,0.5,Allbirds:0.8|EcoWare:0.9|HydroFlask:0.7|Fellow:0.5,,

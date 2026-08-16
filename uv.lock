@@ -6,15 +6,16 @@ resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version < '3.12' and sys_platform == 'win32'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
-    "python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'emscripten'",
     "python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
 [manifest]
 members = [
+    "buyer-history",
     "mandatelab-contracts",
     "mandatelab-engine",
     "mandatelab-sandbox-executor",
@@ -183,6 +184,20 @@ wheels = [
 css = [
     { name = "tinycss2" },
 ]
+
+[[package]]
+name = "buyer-history"
+version = "0.1.0"
+source = { editable = "buyer_history" }
+
+[package.optional-dependencies]
+contracts = [
+    { name = "mandatelab-contracts" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "mandatelab-contracts", marker = "extra == 'contracts'", editable = "contracts" }]
+provides-extras = ["contracts"]
 
 [[package]]
 name = "certifi"

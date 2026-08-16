@@ -1,0 +1,13 @@
+id,name,category,brand,price,quality,sustainability
+budget_headphones,Studio Lite Headphones,headphones,Generic,25,0.35,0.2
+sony_xm5,Sony WH-1000XM5,headphones,Sony,350,0.95,0.5
+overpriced_clone,Studio Lite Pro Headphones,headphones,Generic,80,0.3,0.15
+basic_bottle,Plain Steel Bottle,bottle,Generic,8,0.4,0.3
+hydro_flask,Hydro Flask Standard Mouth,bottle,HydroFlask,45,0.85,0.7
+eco_bottle,Rebottle Plant-Based Bottle,bottle,EcoWare,15,0.5,0.95
+luxury_bottle,Hydro Flask Limited Edition,bottle,HydroFlask,90,0.8,0.6
+budget_runners,Fleet Road Shoes,sneakers,Generic,40,0.45,0.25
+nike_pegasus,Nike Pegasus 41,sneakers,Nike,130,0.85,0.4
+allbirds,Allbirds Tree Runner,sneakers,Allbirds,110,0.75,0.9
+mr_coffee,Mr. Coffee 12-Cup,coffee,MrCoffee,30,0.5,0.3
+fellow_kettle,Fellow Stagg EKG,coffee,Fellow,165,0.8,0.65

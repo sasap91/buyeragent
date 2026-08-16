@@ -24,6 +24,7 @@ mandatelab-sandbox-executor = { workspace = true }
 
 [tool.uv.workspace]
 members = [
+    "buyer_history",
     "contracts",
     "mandate_engine",
     "sandbox_executor",
@@ -32,4 +33,10 @@ members = [
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-pythonpath = ["contracts/src", "mandate_engine/src", "sandbox_executor/src"]
+pythonpath = [
+    "contracts/src",
+    "mandate_engine/src",
+    "buyer_history/src",
+    "user_profile/src",
+    "sandbox_executor/src",
+]
