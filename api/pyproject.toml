@@ -1,0 +1,29 @@
+[project]
+name = "mandatelab-api"
+version = "0.1.0"
+description = "FastAPI composition layer for MandateLab"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "mandatelab-contracts",
+    "mandatelab-engine",
+    "mandatelab-sandbox-executor",
+    "uvicorn",
+]
+
+[project.scripts]
+mandatelab-api = "mandatelab_api.main:run"
+
+[dependency-groups]
+dev = [
+    "httpx2",
+]
+
+[tool.uv.sources]
+mandatelab-contracts = { workspace = true }
+mandatelab-engine = { workspace = true }
+mandatelab-sandbox-executor = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
