@@ -14,6 +14,11 @@
   align-items: start;
 }
 
+.app-body.comparison-layout {
+  width: min(100%, 84rem);
+  grid-template-columns: minmax(28rem, 1fr) minmax(18rem, 24rem);
+}
+
 .app-header {
   margin-bottom: 1rem;
 }
@@ -112,9 +117,121 @@
 }
 
 .card-price {
-  margin: 0 0 1.4rem;
+  margin: 0 0 0.85rem;
   font-size: 2rem;
   font-weight: 700;
+}
+
+.card-meta {
+  margin: 0 0 1.1rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.card-meta li {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #2a3140;
+  color: #c9c3b8;
+  font-size: 0.75rem;
+}
+
+.comparison {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comparison-progress {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9c3b8;
+}
+
+.comparison-prompt {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+.comparison-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.comparison-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.comparison-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d7c9a3;
+}
+
+.comparison-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.choice-btn {
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  border: 0;
+  background: #f4f1ea;
+  color: #12141a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.choice-btn.ghost {
+  background: transparent;
+  color: #f4f1ea;
+  border: 1px solid #4a4f5a;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.75rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.7rem;
+  background: #181b22;
+  border: 1px solid #2c313c;
+}
+
+.profile-label {
+  color: #c9c3b8;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.profile-value {
+  font-weight: 600;
+}
+
+.profile-extra {
+  margin-left: 0.4rem;
+  color: #9a948a;
+  font-weight: 400;
 }
 
 .score-bar {
@@ -292,13 +409,19 @@
 }
 
 @media (max-width: 840px) {
-  .app-body {
+  .app-body,
+  .app-body.comparison-layout {
     grid-template-columns: 1fr;
   }
 
   .product-list {
     width: min(100%, 26rem);
     justify-self: center;
+  }
+
+  .comparison-cards,
+  .profile-row {
+    grid-template-columns: 1fr;
   }
 }
 

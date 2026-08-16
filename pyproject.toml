@@ -8,6 +8,7 @@ dependencies = [
     "mandatelab-contracts",
     "mandatelab-engine",
     "mandatelab-sandbox-executor",
+    "user-profile",
 ]
 
 [dependency-groups]
@@ -23,6 +24,7 @@ mandatelab-api = { workspace = true }
 mandatelab-contracts = { workspace = true }
 mandatelab-engine = { workspace = true }
 mandatelab-sandbox-executor = { workspace = true }
+user-profile = { workspace = true }
 
 [tool.uv.workspace]
 members = [
@@ -37,6 +39,7 @@ members = [
 [tool.pytest.ini_options]
 addopts = "-ra"
 pythonpath = [
+    ".",
     "api/src",
     "contracts/src",
     "mandate_engine/src",
