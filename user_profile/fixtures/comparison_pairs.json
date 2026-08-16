@@ -1,0 +1,254 @@
+{
+  "category": "headphones",
+  "demo_pair_count": 5,
+  "pairs": [
+    {
+      "pair_id": "price-vs-quality",
+      "tradeoff": "price_vs_quality",
+      "prompt": "Cheaper and basic, or more expensive with better sound?",
+      "left": {
+        "id": "generic-anc-100",
+        "name": "Generic ANC 100",
+        "category": "headphones",
+        "brand": "Generic",
+        "price": 69.99,
+        "quality": 0.35,
+        "sustainability": 0.2,
+        "condition": "NEW",
+        "delivery_days": 4,
+        "return_window_days": 30,
+        "merchant": "Value Electronics"
+      },
+      "right": {
+        "id": "sony-wh-1000xm5",
+        "name": "Sony WH-1000XM5",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 229.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      }
+    },
+    {
+      "pair_id": "brand-vs-price",
+      "tradeoff": "brand_vs_price",
+      "prompt": "Pay more for a preferred brand, or save with a similar alternative?",
+      "left": {
+        "id": "sony-wh-1000xm5",
+        "name": "Sony WH-1000XM5",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 229.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "soundcore-space-q45",
+        "name": "Soundcore Space Q45",
+        "category": "headphones",
+        "brand": "Soundcore",
+        "price": 109.99,
+        "quality": 0.78,
+        "sustainability": 0.45,
+        "condition": "NEW",
+        "delivery_days": 2,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      }
+    },
+    {
+      "pair_id": "delivery-vs-price",
+      "tradeoff": "delivery_vs_price",
+      "prompt": "Pay extra to get them tomorrow, or wait a week and save?",
+      "left": {
+        "id": "sony-xm5-overnight",
+        "name": "Sony WH-1000XM5 — overnight",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 259.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 1,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "sony-xm5-standard",
+        "name": "Sony WH-1000XM5 — standard ship",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 229.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 7,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      }
+    },
+    {
+      "pair_id": "new-vs-refurbished",
+      "tradeoff": "new_vs_refurbished",
+      "prompt": "Brand-new, or a refurbished unit at a lower price?",
+      "left": {
+        "id": "sony-wh-1000xm5",
+        "name": "Sony WH-1000XM5",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 229.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "sony-wh-1000xm4",
+        "name": "Sony WH-1000XM4",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 159.99,
+        "quality": 0.88,
+        "sustainability": 0.45,
+        "condition": "REFURBISHED",
+        "delivery_days": 2,
+        "return_window_days": 90,
+        "merchant": "Renewed Audio"
+      }
+    },
+    {
+      "pair_id": "returns-vs-price",
+      "tradeoff": "returns_vs_price",
+      "prompt": "Pay a little more for a longer return window, or take the lower price?",
+      "left": {
+        "id": "sennheiser-m4-extended",
+        "name": "Sennheiser Momentum 4 — 90-day returns",
+        "category": "headphones",
+        "brand": "Sennheiser",
+        "price": 269.95,
+        "quality": 0.9,
+        "sustainability": 0.55,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 90,
+        "merchant": "Sound Depot"
+      },
+      "right": {
+        "id": "sennheiser-momentum-4",
+        "name": "Sennheiser Momentum 4 Wireless",
+        "category": "headphones",
+        "brand": "Sennheiser",
+        "price": 249.95,
+        "quality": 0.9,
+        "sustainability": 0.55,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "Sound Depot"
+      }
+    },
+    {
+      "pair_id": "sony-vs-bose",
+      "tradeoff": "brand_vs_brand",
+      "prompt": "Sony or Bose at nearly the same price?",
+      "left": {
+        "id": "sony-wh-1000xm5",
+        "name": "Sony WH-1000XM5",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 229.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "bose-quietcomfort",
+        "name": "Bose QuietComfort",
+        "category": "headphones",
+        "brand": "Bose",
+        "price": 227.0,
+        "quality": 0.86,
+        "sustainability": 0.48,
+        "condition": "NEW",
+        "delivery_days": 5,
+        "return_window_days": 30,
+        "merchant": "Sound Depot"
+      }
+    },
+    {
+      "pair_id": "merchant-trust-vs-price",
+      "tradeoff": "merchant_trust_vs_price",
+      "prompt": "Buy from a trusted merchant, or save at a discount seller?",
+      "left": {
+        "id": "sony-wh-1000xm5",
+        "name": "Sony WH-1000XM5",
+        "category": "headphones",
+        "brand": "Sony",
+        "price": 229.99,
+        "quality": 0.95,
+        "sustainability": 0.5,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "beats-studio-pro",
+        "name": "Beats Studio Pro",
+        "category": "headphones",
+        "brand": "Beats",
+        "price": 184.99,
+        "quality": 0.72,
+        "sustainability": 0.35,
+        "condition": "NEW",
+        "delivery_days": 6,
+        "return_window_days": 15,
+        "merchant": "Value Electronics"
+      }
+    },
+    {
+      "pair_id": "quality-vs-brand",
+      "tradeoff": "quality_vs_brand",
+      "prompt": "A famous brand at a premium, or stronger reviews for less?",
+      "left": {
+        "id": "apple-airpods-max-usbc",
+        "name": "Apple AirPods Max USB-C",
+        "category": "headphones",
+        "brand": "Apple",
+        "price": 499.0,
+        "quality": 0.82,
+        "sustainability": 0.4,
+        "condition": "NEW",
+        "delivery_days": 4,
+        "return_window_days": 14,
+        "merchant": "MandateMart"
+      },
+      "right": {
+        "id": "sennheiser-momentum-4",
+        "name": "Sennheiser Momentum 4 Wireless",
+        "category": "headphones",
+        "brand": "Sennheiser",
+        "price": 249.95,
+        "quality": 0.9,
+        "sustainability": 0.55,
+        "condition": "NEW",
+        "delivery_days": 3,
+        "return_window_days": 30,
+        "merchant": "Sound Depot"
+      }
+    }
+  ]
+}

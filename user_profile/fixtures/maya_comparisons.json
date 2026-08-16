@@ -1,0 +1,11 @@
+{
+  "buyer_id": "buyer-maya",
+  "category": "headphones",
+  "comparisons": [
+    {"pair_id": "price-vs-quality", "choice": "RIGHT"},
+    {"pair_id": "brand-vs-price", "choice": "LEFT"},
+    {"pair_id": "delivery-vs-price", "choice": "RIGHT"},
+    {"pair_id": "new-vs-refurbished", "choice": "LEFT"},
+    {"pair_id": "returns-vs-price", "choice": "LEFT"}
+  ]
+}

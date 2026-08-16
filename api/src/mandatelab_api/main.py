@@ -20,7 +20,7 @@ from mandatelab_engine import (
     validate_precheckout,
 )
 from mandatelab_sandbox_executor import InMemorySandboxExecutor
-from user_profile.server import router as cold_start_router
+from user_profile.router import router as cold_start_router
 
 from mandatelab_api.models import (
     EvaluateCandidateRequest,

@@ -105,6 +105,7 @@ def test_health_and_openapi_publish_all_versioned_routes(
     assert response.json() == {"status": "ok"}
     paths = client.get("/openapi.json").json()["paths"]
     assert set(paths) == {
+        "/api/pairs",
         "/api/update",
         "/api/v1/health",
         "/api/v1/mandates",
@@ -273,3 +274,51 @@ def test_usd_only_validation_is_enforced_at_the_http_boundary(
     response = client.post("/api/v1/mandates", json=payload)
 
     assert response.status_code == 422
+
+
+def test_cold_start_pairs_route_returns_headphones_catalog(client: TestClient) -> None:
+    response = client.get("/api/pairs")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["category"] == "headphones"
+    assert payload["demo_pair_count"] == 5
+    assert len(payload["pairs"]) == 8
+    first = payload["pairs"][0]
+    assert {"pair_id", "tradeoff", "prompt", "left", "right"} <= set(first)
+    assert first["left"]["condition"]
+    assert first["left"]["delivery_days"] is not None
+    assert first["left"]["return_window_days"] is not None
+
+
+def test_cold_start_update_returns_a_buyer_preference_profile(
+    client: TestClient,
+) -> None:
+    maya_path = (
+        REPOSITORY_ROOT / "user_profile" / "fixtures" / "maya_comparisons.json"
+    )
+    payload = json.loads(maya_path.read_text(encoding="utf-8"))
+    payload["include_model"] = False
+
+    response = client.post("/api/update", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    profile = BuyerPreferenceProfile.model_validate(body["profile"])
+    assert profile.buyer_id == "buyer-maya"
+    assert profile.category == "headphones"
+    assert profile.quality_importance.value.value == "HIGH"
+    assert profile.hard_rule_candidates
+    assert body["weights"] == []
+    assert body["plots"] is None
+
+
+def test_cold_start_update_rejects_unknown_pairs(client: TestClient) -> None:
+    response = client.post(
+        "/api/update",
+        json={
+            "buyer_id": "buyer-maya",
+            "include_model": False,
+            "comparisons": [{"pair_id": "not-a-pair", "choice": "LEFT"}],
+        },
+    )
+    assert response.status_code == 400
