@@ -20,6 +20,7 @@ from mandatelab_engine import (
     validate_precheckout,
 )
 from mandatelab_sandbox_executor import InMemorySandboxExecutor
+from user_profile.server import router as cold_start_router
 
 from mandatelab_api.models import (
     EvaluateCandidateRequest,
@@ -54,6 +55,7 @@ def create_app(
     application.state.sandbox_executor = (
         executor or InMemorySandboxExecutor()
     )
+    application.include_router(cold_start_router, tags=["cold-start"])
 
     async def domain_error_handler(
         request: Request, exc: Exception

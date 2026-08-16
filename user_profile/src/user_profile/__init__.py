@@ -3,8 +3,17 @@ from user_profile.objectives import ObjectiveScores, score_catalog, score_produc
 from user_profile.pareto import CurvePoint, ParetoCurve, dominates, filter_feed
 from user_profile.preferences import PREFERENCE_AXES, User, UserPreferences
 from user_profile.product import Product
-from user_profile.user_preference_model import UserPreferenceModel
 from user_profile.utility import UtilityFunction
+
+
+def __getattr__(name: str):
+    """Load the scientific model only when a caller actually requests it."""
+
+    if name == "UserPreferenceModel":
+        from user_profile.user_preference_model import UserPreferenceModel
+
+        return UserPreferenceModel
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
     "PREFERENCE_AXES",

@@ -8,6 +8,7 @@ dependencies = [
     "mandatelab-contracts",
     "mandatelab-engine",
     "mandatelab-sandbox-executor",
+    "user-profile",
     "uvicorn",
 ]
 
@@ -23,6 +24,7 @@ dev = [
 mandatelab-contracts = { workspace = true }
 mandatelab-engine = { workspace = true }
 mandatelab-sandbox-executor = { workspace = true }
+user-profile = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
