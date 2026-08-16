@@ -6,6 +6,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 
+# The core package is stdlib-only. Only buyer_history.contract needs Pydantic,
+# so the shared-contract adapter is an opt-in extra.
+[project.optional-dependencies]
+contracts = ["mandatelab-contracts"]
+
+[tool.uv.sources]
+mandatelab-contracts = { workspace = true }
+
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"

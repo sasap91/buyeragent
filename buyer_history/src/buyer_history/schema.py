@@ -106,6 +106,10 @@ class PreferenceSignal:
     confidence: float = 0.0
     evidence: list[str] = field(default_factory=list)
     observable: bool = True
+    # Continuous intensity behind a bucketed value, where one exists. Kept
+    # alongside the bucket so the shared contract's `numeric_weight` can be
+    # filled from the real score instead of a bucket midpoint.
+    numeric_weight: float | None = None
 
     @property
     def confidence_band(self) -> ConfidenceBand:
@@ -118,6 +122,9 @@ class PreferenceSignal:
             "confidence": round(self.confidence, 4),
             "confidence_band": self.confidence_band.value,
             "observable": self.observable,
+            "numeric_weight": (
+                None if self.numeric_weight is None else round(self.numeric_weight, 4)
+            ),
             "evidence": list(self.evidence),
         }
 

@@ -376,6 +376,7 @@ def price_sensitivity_signal(
         source=Source.INFERRED,
         confidence=confidence,
         evidence=evidence,
+        numeric_weight=round(min(1.0, max(0.0, score)), 4),
     )
 
 
@@ -402,6 +403,7 @@ def quality_importance_signal(
         source=Source.INFERRED,
         confidence=_confidence(sum(weights), len({t.order_id for t in rows})),
         evidence=evidence,
+        numeric_weight=round(min(1.0, max(0.0, score)), 4),
     )
 
 
