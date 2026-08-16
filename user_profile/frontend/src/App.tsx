@@ -1,19 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import productsCsv from '../../examples/products.csv?raw'
+import { updateModel } from './api'
 import './App.css'
+import { ModelPanel } from './components/ModelPanel'
 import { ProductList } from './components/ProductList'
 import { Results } from './components/Results'
 import { parseProducts } from './parseProducts'
-import type { Product, SwipeResponse } from './types'
+import type { ModelSnapshot, Product, SwipeResponse } from './types'
 
 const catalog = parseProducts(productsCsv)
 
-function rejectResponse(product: Product, reason: string): SwipeResponse {
+function rejectResponse(product: Product): SwipeResponse {
   return {
     product_id: product.id,
     name: product.name,
     accepted: false,
-    feedback: reason.trim(),
+    feedback: '',
   }
 }
 
@@ -28,31 +30,46 @@ function acceptResponse(product: Product): SwipeResponse {
 
 export default function App() {
   const [remaining, setRemaining] = useState<Product[]>(catalog)
-  const [removingId, setRemovingId] = useState<string | null>(null)
-  const [reason, setReason] = useState('')
   const [responses, setResponses] = useState<SwipeResponse[]>([])
   const [done, setDone] = useState(false)
+  const [model, setModel] = useState<ModelSnapshot | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const startRemove = (id: string) => {
-    setRemovingId(id)
-    setReason('')
-  }
+  useEffect(() => {
+    const controller = new AbortController()
+    const remainingIds = remaining.map((item) => item.id)
+    const rejectedIds = responses
+      .filter((item) => !item.accepted)
+      .map((item) => item.product_id)
+    setLoading(true)
+    setError(null)
+    updateModel(remainingIds, rejectedIds, controller.signal)
+      .then((snapshot) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        setModel(snapshot)
+        setLoading(false)
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        setLoading(false)
+        setError(err instanceof Error ? err.message : 'Failed to update model')
+      })
+    return () => controller.abort()
+  }, [remaining, responses])
 
-  const cancelRemove = () => {
-    setRemovingId(null)
-    setReason('')
-  }
-
-  const confirmRemove = () => {
-    const product = remaining.find((item) => item.id === removingId)
+  const remove = (id: string) => {
+    const product = remaining.find((item) => item.id === id)
     if (!product) {
       return
     }
     const next = remaining.filter((item) => item.id !== product.id)
-    setResponses((prev) => [...prev, rejectResponse(product, reason)])
+    setResponses((prev) => [...prev, rejectResponse(product)])
     setRemaining(next)
-    setRemovingId(null)
-    setReason('')
     if (next.length === 0) {
       setDone(true)
     }
@@ -65,10 +82,10 @@ export default function App() {
 
   const restart = () => {
     setRemaining(catalog)
-    setRemovingId(null)
-    setReason('')
     setResponses([])
     setDone(false)
+    setModel(null)
+    setError(null)
   }
 
   return (
@@ -76,20 +93,14 @@ export default function App() {
       <header className="app-header">
         <h1>Products</h1>
       </header>
-      {done ? (
-        <Results responses={responses} onRestart={restart} />
-      ) : (
-        <ProductList
-          products={remaining}
-          removingId={removingId}
-          reason={reason}
-          onReasonChange={setReason}
-          onStartRemove={startRemove}
-          onCancelRemove={cancelRemove}
-          onConfirmRemove={confirmRemove}
-          onDone={finish}
-        />
-      )}
+      <div className="app-body">
+        {done ? (
+          <Results responses={responses} onRestart={restart} />
+        ) : (
+          <ProductList products={remaining} onRemove={remove} onDone={finish} />
+        )}
+        <ModelPanel model={model} loading={loading} error={error} />
+      </div>
     </div>
   )
 }

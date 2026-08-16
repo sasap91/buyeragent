@@ -6,6 +6,14 @@
   padding: 1.5rem 1rem 2.5rem;
 }
 
+.app-body {
+  width: min(100%, 72rem);
+  display: grid;
+  grid-template-columns: minmax(16rem, 26rem) minmax(20rem, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
 .app-header {
   margin-bottom: 1rem;
 }
@@ -68,18 +76,6 @@
 
 .remove-btn:hover {
   background: #3a2222;
-}
-
-.reason-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.reason-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
 }
 
 .product-card {
@@ -146,42 +142,81 @@
   background: linear-gradient(90deg, #d7c9a3, #f0e6cc);
 }
 
-.feedback-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  width: 100%;
+.model-panel {
+  min-width: 0;
+  padding: 1.25rem 1.2rem 1.5rem;
+  border-radius: 1.2rem;
+  background: #181b22;
+  border: 1px solid #2c313c;
+}
+
+.model-panel h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: #c9c3b8;
+}
+
+.model-panel h3 {
+  margin: 1.1rem 0 0.5rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9c3b8;
+}
+
+.model-status,
+.model-error {
+  margin: 0 0 0.75rem;
   font-size: 0.85rem;
 }
 
-.feedback-field input {
-  width: 100%;
-  padding: 0.7rem 0.85rem;
+.model-error {
+  color: #ff6b6b;
+}
+
+.weight-table-wrap {
+  max-height: 16rem;
+  overflow: auto;
   border-radius: 0.7rem;
   border: 1px solid #2c313c;
-  background: #181b22;
-  color: #f4f1ea;
-  font: inherit;
 }
 
-.feedback-field input::placeholder {
-  color: #6f6a62;
+.weight-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
 }
 
-.feedback-field input:disabled {
-  opacity: 0.55;
+.weight-table td {
+  padding: 0.35rem 0.65rem;
+  border-bottom: 1px solid #2c313c;
+  vertical-align: top;
 }
 
-.feedback-note {
+.weight-table td:first-child {
+  color: #d7c9a3;
+  word-break: break-word;
+}
+
+.weight-table td:last-child {
+  width: 4.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.model-plot {
   display: block;
-  margin-top: 0.2rem;
-  color: #9a948a;
-  font-size: 0.85rem;
+  width: 100%;
+  height: auto;
+  border-radius: 0.7rem;
+  background: #f4f1ea;
 }
 
 .results {
-  width: min(100%, 40rem);
+  width: 100%;
+  min-width: 0;
 }
 
 .results h2 {
@@ -254,6 +289,17 @@
   background: transparent;
   color: #f4f1ea;
   border: 1px solid #4a4f5a;
+}
+
+@media (max-width: 840px) {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+
+  .product-list {
+    width: min(100%, 26rem);
+    justify-self: center;
+  }
 }
 
 @media (max-width: 520px) {

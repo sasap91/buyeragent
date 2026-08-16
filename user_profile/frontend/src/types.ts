@@ -14,3 +14,16 @@ export type SwipeResponse = {
   accepted: boolean
   feedback: string
 }
+
+export type WeightRow = {
+  name: string
+  value: number
+}
+
+export type ModelSnapshot = {
+  weights: WeightRow[]
+  plots: {
+    quality_price: string
+    price_sustainability: string
+  }
+}

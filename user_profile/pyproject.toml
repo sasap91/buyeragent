@@ -8,15 +8,19 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi",
+    "matplotlib",
     "pandas>=3.0.5",
     "pyro-ppl",
     "scikit-learn",
     "statsmodels>=0.14.6",
     "torch",
+    "uvicorn",
 ]
 
 [project.scripts]
 user-profile = "user_profile:main"
+user-profile-server = "user_profile.server:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
