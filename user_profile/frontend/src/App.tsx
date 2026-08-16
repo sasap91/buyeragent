@@ -1,63 +1,93 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import productsCsv from '../../examples/products.csv?raw'
 import './App.css'
+import { ProductList } from './components/ProductList'
 import { Results } from './components/Results'
-import { SwipeDeck } from './components/SwipeDeck'
 import { parseProducts } from './parseProducts'
-import type { SwipeResponse } from './types'
+import type { Product, SwipeResponse } from './types'
 
-const products = parseProducts(productsCsv)
+const catalog = parseProducts(productsCsv)
+
+function rejectResponse(product: Product, reason: string): SwipeResponse {
+  return {
+    product_id: product.id,
+    name: product.name,
+    accepted: false,
+    feedback: reason.trim(),
+  }
+}
+
+function acceptResponse(product: Product): SwipeResponse {
+  return {
+    product_id: product.id,
+    name: product.name,
+    accepted: true,
+    feedback: '',
+  }
+}
 
 export default function App() {
-  const [index, setIndex] = useState(0)
+  const [remaining, setRemaining] = useState<Product[]>(catalog)
+  const [removingId, setRemovingId] = useState<string | null>(null)
+  const [reason, setReason] = useState('')
   const [responses, setResponses] = useState<SwipeResponse[]>([])
-  const [exit, setExit] = useState<'left' | 'right' | null>(null)
+  const [done, setDone] = useState(false)
 
-  const done = index >= products.length
+  const startRemove = (id: string) => {
+    setRemovingId(id)
+    setReason('')
+  }
 
-  const onSwipe = useCallback(
-    (accepted: boolean) => {
-      if (exit !== null || index >= products.length) {
-        return
-      }
-      setExit(accepted ? 'right' : 'left')
-    },
-    [exit, index],
-  )
+  const cancelRemove = () => {
+    setRemovingId(null)
+    setReason('')
+  }
 
-  const onExitEnd = () => {
-    const product = products[index]
-    if (!product || exit === null) {
+  const confirmRemove = () => {
+    const product = remaining.find((item) => item.id === removingId)
+    if (!product) {
       return
     }
-    setResponses((prev) => [
-      ...prev,
-      { product_id: product.id, name: product.name, accepted: exit === 'right' },
-    ])
-    setIndex((current) => current + 1)
-    setExit(null)
+    const next = remaining.filter((item) => item.id !== product.id)
+    setResponses((prev) => [...prev, rejectResponse(product, reason)])
+    setRemaining(next)
+    setRemovingId(null)
+    setReason('')
+    if (next.length === 0) {
+      setDone(true)
+    }
+  }
+
+  const finish = () => {
+    setResponses((prev) => [...prev, ...remaining.map(acceptResponse)])
+    setDone(true)
   }
 
   const restart = () => {
-    setIndex(0)
+    setRemaining(catalog)
+    setRemovingId(null)
+    setReason('')
     setResponses([])
-    setExit(null)
+    setDone(false)
   }
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Product Swipe</h1>
+        <h1>Products</h1>
       </header>
       {done ? (
         <Results responses={responses} onRestart={restart} />
       ) : (
-        <SwipeDeck
-          products={products}
-          index={index}
-          exit={exit}
-          onSwipe={onSwipe}
-          onExitEnd={onExitEnd}
+        <ProductList
+          products={remaining}
+          removingId={removingId}
+          reason={reason}
+          onReasonChange={setReason}
+          onStartRemove={startRemove}
+          onCancelRemove={cancelRemove}
+          onConfirmRemove={confirmRemove}
+          onDone={finish}
         />
       )}
     </div>

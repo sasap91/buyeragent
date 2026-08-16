@@ -3,6 +3,7 @@ from user_profile.objectives import ObjectiveScores, score_catalog, score_produc
 from user_profile.pareto import CurvePoint, ParetoCurve, dominates, filter_feed
 from user_profile.preferences import PREFERENCE_AXES, User, UserPreferences
 from user_profile.product import Product
+from user_profile.user_preference_model import UserPreferenceModel
 from user_profile.utility import UtilityFunction
 
 __all__ = [
@@ -12,6 +13,7 @@ __all__ = [
     "ParetoCurve",
     "Product",
     "User",
+    "UserPreferenceModel",
     "UserPreferences",
     "UtilityFunction",
     "dominates",

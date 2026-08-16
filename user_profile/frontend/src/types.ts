@@ -12,4 +12,5 @@ export type SwipeResponse = {
   product_id: string
   name: string
   accepted: boolean
+  feedback: string
 }

@@ -7,7 +7,13 @@ authors = [
     { name = "lrast", email = "luke.rast@gmail.com" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pandas>=3.0.5",
+    "pyro-ppl",
+    "scikit-learn",
+    "statsmodels>=0.14.6",
+    "torch",
+]
 
 [project.scripts]
 user-profile = "user_profile:main"
@@ -15,3 +21,9 @@ user-profile = "user_profile:main"
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipython>=9.16.1",
+    "jupyter>=1.1.1",
+]

@@ -36,7 +36,10 @@ export function Results({
           ) : (
             <ul>
               {accepted.map((item) => (
-                <li key={item.product_id}>{item.name}</li>
+                <li key={item.product_id}>
+                  {item.name}
+                  {item.feedback ? <span className="feedback-note">{item.feedback}</span> : null}
+                </li>
               ))}
             </ul>
           )}
@@ -48,7 +51,10 @@ export function Results({
           ) : (
             <ul>
               {rejected.map((item) => (
-                <li key={item.product_id}>{item.name}</li>
+                <li key={item.product_id}>
+                  {item.name}
+                  {item.feedback ? <span className="feedback-note">{item.feedback}</span> : null}
+                </li>
               ))}
             </ul>
           )}

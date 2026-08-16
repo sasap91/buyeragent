@@ -23,23 +23,9 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
   )
 }
 
-export function ProductCard({
-  product,
-  exit,
-  onExitEnd,
-}: {
-  product: Product
-  exit?: 'left' | 'right' | null
-  onExitEnd?: () => void
-}) {
-  const className = ['product-card', exit ? `exit-${exit}` : '']
-    .filter(Boolean)
-    .join(' ')
-
+export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className={className} onAnimationEnd={onExitEnd}>
-      {exit === 'left' ? <div className="stamp stamp-nope">Nope</div> : null}
-      {exit === 'right' ? <div className="stamp stamp-like">Like</div> : null}
+    <article className="product-card">
       <div className="card-category">{product.category}</div>
       <h2 className="card-name">{product.name}</h2>
       <p className="card-brand">{product.brand}</p>

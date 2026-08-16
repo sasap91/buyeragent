@@ -19,97 +19,77 @@
   font-weight: 600;
 }
 
-.swipe-deck {
+.product-list {
   width: min(100%, 26rem);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  align-items: stretch;
+  gap: 1.25rem;
 }
 
-.progress {
+.product-list-items {
   margin: 0;
-  color: #9a948a;
-  font-variant-numeric: tabular-nums;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }
 
-.card-stack {
+.product-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.product-list-card {
   position: relative;
-  width: 100%;
-  min-height: 26rem;
 }
 
-.card-layer {
+.product-list-card .product-card {
+  padding-right: 3.4rem;
+}
+
+.remove-btn {
   position: absolute;
-  inset: 0;
-}
-
-.card-layer-next {
-  transform: scale(0.96) translateY(10px);
-  opacity: 0.55;
-  pointer-events: none;
-}
-
-.card-layer-current {
+  top: 0.85rem;
+  right: 0.85rem;
   z-index: 1;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  border: 1px solid #5a3030;
+  background: #2a1c1c;
+  color: #ff6b6b;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background: #3a2222;
+}
+
+.reason-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.reason-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .product-card {
   position: relative;
-  height: 100%;
   padding: 1.75rem 1.6rem;
   border-radius: 1.4rem;
   background: linear-gradient(180deg, #1e222c 0%, #181b22 100%);
   border: 1px solid #2c313c;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   overflow: hidden;
-}
-
-.product-card.exit-left {
-  animation: swipe-left 0.28s ease-in forwards;
-}
-
-.product-card.exit-right {
-  animation: swipe-right 0.28s ease-in forwards;
-}
-
-@keyframes swipe-left {
-  to {
-    transform: translateX(-120%) rotate(-12deg);
-    opacity: 0;
-  }
-}
-
-@keyframes swipe-right {
-  to {
-    transform: translateX(120%) rotate(12deg);
-    opacity: 0;
-  }
-}
-
-.stamp {
-  position: absolute;
-  top: 1.4rem;
-  padding: 0.2rem 0.7rem;
-  border: 3px solid;
-  border-radius: 0.4rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transform: rotate(-18deg);
-}
-
-.stamp-nope {
-  left: 1.2rem;
-  color: #ff6b6b;
-  border-color: #ff6b6b;
-}
-
-.stamp-like {
-  right: 1.2rem;
-  transform: rotate(18deg);
-  color: #4ade80;
-  border-color: #4ade80;
 }
 
 .card-category {
@@ -166,48 +146,37 @@
   background: linear-gradient(90deg, #d7c9a3, #f0e6cc);
 }
 
-.swipe-actions {
+.feedback-field {
   display: flex;
-  gap: 2.5rem;
-  margin-top: 0.4rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  color: #c9c3b8;
+  font-size: 0.85rem;
 }
 
-.swipe-btn {
-  width: 4.2rem;
-  height: 4.2rem;
-  border-radius: 50%;
-  border: 2px solid;
+.feedback-field input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.7rem;
+  border: 1px solid #2c313c;
   background: #181b22;
-  color: inherit;
-  font-size: 1.6rem;
-  cursor: pointer;
-  transition:
-    transform 0.12s ease,
-    background 0.12s ease;
+  color: #f4f1ea;
+  font: inherit;
 }
 
-.swipe-btn:hover:not(:disabled) {
-  transform: scale(1.06);
-}
-
-.swipe-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.swipe-btn.reject {
-  border-color: #ff6b6b;
-  color: #ff6b6b;
-}
-
-.swipe-btn.accept {
-  border-color: #4ade80;
-  color: #4ade80;
-}
-
-.hint {
-  margin: 0;
+.feedback-field input::placeholder {
   color: #6f6a62;
+}
+
+.feedback-field input:disabled {
+  opacity: 0.55;
+}
+
+.feedback-note {
+  display: block;
+  margin-top: 0.2rem;
+  color: #9a948a;
   font-size: 0.85rem;
 }
 

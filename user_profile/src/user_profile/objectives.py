@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from math import sqrt
 
 from user_profile.preferences import User
 from user_profile.product import Product
@@ -26,20 +27,34 @@ class ObjectiveScores:
         }
 
 
-def _price_score(
-    product: Product,
-    catalog: Sequence[Product],
-    max_price: float | None,
-) -> float:
+def _catalog_mean_variance(values: Sequence[float]) -> tuple[float, float]:
+    n = len(values)
+    if n == 0:
+        return 0.0, 0.0
+    mean = sum(values) / n
+    variance = sum((value - mean) ** 2 for value in values) / n
+    return mean, variance
+
+
+def _z_score(value: float, values: Sequence[float]) -> float:
+    mean, variance = _catalog_mean_variance(values)
+    if variance <= 0:
+        return 0.0
+    return (value - mean) / sqrt(variance)
+
+
+def _price_score(product: Product, catalog: Sequence[Product]) -> float:
+    """Z-score of price vs the catalog; negated so cheaper is better."""
     if not catalog:
-        return 1.0
-    prices = [item.price for item in catalog]
-    lo = min(prices)
-    hi = max_price if max_price is not None else max(prices)
-    span = hi - lo
-    if span <= 0:
-        return 1.0
-    return max(0.0, min(1.0, (hi - product.price) / span))
+        return 0.0
+    return -_z_score(product.price, [item.price for item in catalog])
+
+
+def _quality_score(product: Product, catalog: Sequence[Product]) -> float:
+    """Z-score of quality vs the catalog; higher quality is better."""
+    if not catalog:
+        return 0.0
+    return _z_score(product.quality, [item.quality for item in catalog])
 
 
 def score_product(
@@ -48,8 +63,8 @@ def score_product(
     catalog: Sequence[Product],
 ) -> ObjectiveScores:
     return ObjectiveScores(
-        price=_price_score(product, catalog, user.preferences.max_price),
-        quality=product.quality,
+        price=_price_score(product, catalog),
+        quality=_quality_score(product, catalog),
         brand=user.preferences.brand_affinity(product.brand),
         sustainability=product.sustainability,
     )
