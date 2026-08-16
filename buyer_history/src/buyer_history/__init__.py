@@ -11,6 +11,12 @@ Two invariants hold throughout:
     preferences only; the Mandate Engine owns constraints and enforcement.
 """
 
+from buyer_history.basket import (
+    BasketSuggestion,
+    WeeklyBasket,
+    format_basket,
+    suggest_weekly_basket,
+)
 from buyer_history.events import (
     ActionType,
     CandidateRecord,
@@ -69,6 +75,7 @@ from buyer_history.update import (
 
 __all__ = [
     "ActionType",
+    "BasketSuggestion",
     "BuyerPreferenceProfile",
     "BuyerProfileBundle",
     "CadenceSource",
@@ -99,6 +106,7 @@ __all__ = [
     "RewardSignals",
     "ShoppingTrajectory",
     "Source",
+    "WeeklyBasket",
     "build_category_profiles",
     "build_item_profiles",
     "build_preference_profile",
@@ -109,9 +117,11 @@ __all__ = [
     "export_bundle",
     "extract_attributes",
     "extract_brand",
+    "format_basket",
     "load_workbook_history",
     "predict_purchase_probability",
     "record_purchase",
     "resolve_category_key",
+    "suggest_weekly_basket",
     "update_profile",
 ]

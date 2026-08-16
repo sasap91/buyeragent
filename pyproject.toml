@@ -34,6 +34,7 @@ members = [
     "mandate_engine",
     "sandbox_executor",
     "user_profile",
+    "weee_cart",
 ]
 
 [tool.pytest.ini_options]
@@ -44,6 +45,7 @@ pythonpath = [
     "contracts/src",
     "mandate_engine/src",
     "buyer_history/src",
+    "weee_cart/src",
     "user_profile/src",
     "sandbox_executor/src",
 ]
