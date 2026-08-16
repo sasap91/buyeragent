@@ -1,0 +1,29 @@
+[project]
+name = "mandatelab-workspace"
+version = "0.1.0"
+description = "MandateLab hackathon workspace"
+requires-python = ">=3.11"
+dependencies = [
+    "mandatelab-contracts",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<10",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+mandatelab-contracts = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "contracts",
+    "user_profile",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["contracts/src"]

@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "buyer_id": "buyer-maya",
+  "category": "headphones",
+  "price_sensitivity": {
+    "value": "MEDIUM",
+    "numeric_weight": "0.55",
+    "source": "COLD_START",
+    "confidence": "0.82"
+  },
+  "quality_importance": {
+    "value": "HIGH",
+    "numeric_weight": "0.90",
+    "source": "COLD_START",
+    "confidence": "0.88"
+  },
+  "delivery_importance": {
+    "value": "LOW",
+    "numeric_weight": "0.25",
+    "source": "COLD_START",
+    "confidence": "0.70"
+  },
+  "return_policy_importance": {
+    "value": "HIGH",
+    "numeric_weight": "0.80",
+    "source": "COLD_START",
+    "confidence": "0.79"
+  },
+  "merchant_trust_importance": {
+    "value": "MEDIUM",
+    "numeric_weight": "0.50",
+    "source": "DEFAULT",
+    "confidence": "0.40"
+  },
+  "preferred_brands": [
+    {
+      "value": "Sony",
+      "numeric_weight": "0.85",
+      "source": "COLD_START",
+      "confidence": "0.86"
+    },
+    {
+      "value": "Bose",
+      "numeric_weight": "0.65",
+      "source": "COLD_START",
+      "confidence": "0.72"
+    }
+  ],
+  "disliked_brands": [],
+  "condition_preferences": [
+    {
+      "value": "NEW",
+      "numeric_weight": "1.0",
+      "source": "CURRENT_EXPLICIT",
+      "confidence": "1.0"
+    }
+  ],
+  "hard_rule_candidates": [
+    {
+      "candidate_id": "rule-candidate-new-only",
+      "kind": "ALLOWED_CONDITION",
+      "operator": "IN",
+      "expected": [
+        "NEW"
+      ],
+      "source": "CURRENT_EXPLICIT",
+      "confidence": "1.0",
+      "requires_confirmation": true,
+      "rationale": "Buyer selected new only during cold-start comparisons."
+    }
+  ],
+  "created_at": "2026-08-16T17:00:00Z"
+}

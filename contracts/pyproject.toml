@@ -1,0 +1,12 @@
+[project]
+name = "mandatelab-contracts"
+version = "0.1.0"
+description = "Shared Pydantic contracts for MandateLab"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.10,<3",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
