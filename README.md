@@ -3,17 +3,17 @@
 **The buyer-alignment and authorization layer for agents that spend money.**
 
 MandateLab learns what "best" means for an individual buyer, converts a purchase
-request into an explicit mandate, and lets a commerce agent find and execute the
-best *permissible* purchase. "Best deal" is not the cheapest product — it is the
-best buyer-specific trade-off across price, quality, brand, delivery, condition,
-returns and merchant trust.
+request into an explicit mandate, and lets a commerce agent act only within it.
+"Best deal" is not the cheapest product — it is the best buyer-specific
+trade-off across price, quality, brand, delivery, condition, returns and
+merchant trust.
 
 Two responsibilities stay separate by design:
 
 - **Commerce execution** — finding and attempting to buy a product.
 - **Mandate authorization** — independently deciding whether that transaction is permissible.
 
-The executor must never bypass the Decision Engine.
+The executor never bypasses the Decision Engine.
 
 > Same products. Different buyer. Different best decision. Same mandate discipline.
 
@@ -21,28 +21,38 @@ Full spec: [`docs/mandatelab-mvp-prd.md`](docs/mandatelab-mvp-prd.md)
 
 ---
 
-## Status
+## What it does
 
-| PRD | Component | Owner | State |
-|---|---|---|---|
-| §6 | Shared data contracts | Prathmesh | ✅ `contracts/` — Pydantic models, `schema_version 1.0` |
-| §5.1 | Cold-start pairwise learning | Luke | ✅ `user_profile/` — Python core + React swipe UI |
-| §5.2 | Existing-buyer learning | Sasa | ✅ `buyer_history/` — profiles, prediction, versioned updates, trajectories |
-| §5.3 | Intent → mandate conversion | Prathmesh | ✅ `parse_mandate()` |
-| §5.3 | Hard-constraint evaluation | Prathmesh | ✅ `evaluate_constraints()` — PASS / FAIL / UNKNOWN |
-| §5.3 | APPROVE / REVIEW / BLOCK | Prathmesh | ✅ `evaluate_candidate()` |
-| §5.3 | Buyer-specific ranking | — | ❌ `RankingExplanation` modelled, nothing implements it |
-| §5.4 | Executor + pre-checkout revalidation | Prathmesh | ❌ not started |
-| §5.5 | Replanning | Prathmesh | ⚠️ `ReplanInstruction` emitted on BLOCK; no loop consumes it |
-| §7 | Trajectory / reward logging | Sasa | ✅ `buyer_history.events` |
-| §8 | Controlled product catalog | Shared | ❌ no shared fixture yet |
+A buyer arrives by one of two paths — swiping through product comparisons, or
+handing over their purchase history. Both produce the same
+`BuyerPreferenceProfile`. That profile plus a current request becomes an
+explicit **mandate**: hard constraints, soft preferences, and spending
+authority. Candidates are then checked against the mandate deterministically,
+and the final cart is revalidated immediately before checkout.
 
-Both preference paths produce the shared profile, and a mandate can be built and
-authorized end to end. What is missing is **ranking** — deciding which of several
-*permissible* candidates best suits this buyer — plus the executor that carries a
-decision through to a sandbox purchase.
+```mermaid
+flowchart TD
+    A["Path A — new buyer<br/>pairwise comparisons"] --> P[BuyerPreferenceProfile]
+    B["Path B — existing buyer<br/>purchase history"] --> P
+    I[Current purchase intent] --> M
+    P --> M["parse_mandate()"]
+    M --> E["evaluate_constraints()<br/>PASS / FAIL / UNKNOWN"]
+    C[Candidate products] --> E
+    E --> D{"evaluate_candidate()"}
+    D -->|APPROVE| V["validate_precheckout()"]
+    D -->|REVIEW| H[Human approval on an exact cart]
+    D -->|BLOCK| R[ReplanInstruction]
+    H --> V
+    V --> L["Trajectory + reward logging"]
+```
 
-Tests: **79 passing** across four packages.
+Preference precedence, highest first:
+
+1. Current hard mandate
+2. Current explicit preferences
+3. Learned category preferences
+4. General buyer preferences
+5. Default assumptions
 
 ---
 
@@ -50,10 +60,10 @@ Tests: **79 passing** across four packages.
 
 ```
 contracts/        mandatelab_contracts  — shared schemas, the integration seam
-mandate_engine/   mandatelab_engine     — mandates, constraints, decisions
-buyer_history/    buyer_history         — §5.2 learning from purchase history
-user_profile/     user_profile          — §5.1 cold-start pairwise comparisons
-  frontend/       React + Vite swipe UI for the comparison flow
+mandate_engine/   mandatelab_engine     — mandates, constraints, decisions, pre-checkout
+buyer_history/    buyer_history         — preference learning from purchase history
+user_profile/     user_profile          — cold-start learning from pairwise comparisons
+  frontend/       React + Vite comparison UI
 docs/             the PRD
 ```
 
@@ -64,8 +74,8 @@ docs/             the PRD
 Python 3.11, [uv](https://docs.astral.sh/uv/) for the workspace.
 
 ```bash
-uv sync                 # all four packages
-uv run pytest           # 79 tests across every module
+uv sync
+uv run pytest
 ```
 
 Demos:
@@ -89,51 +99,13 @@ cd user_profile/frontend && npm install && npm run dev
 
 ---
 
-## The pipeline
-
-```mermaid
-flowchart TD
-    A["Path A — new buyer<br/>pairwise comparisons"] --> P[BuyerPreferenceProfile]
-    B["Path B — existing buyer<br/>purchase history"] --> P
-    I[Current explicit intent] --> M
-    P --> M["parse_mandate()"]
-    M --> C[Candidate products]
-    C --> E["evaluate_constraints()<br/>PASS / FAIL / UNKNOWN"]
-    E --> F[Feasible set]
-    F --> R[Buyer-specific ranking]
-    R --> D{"evaluate_candidate()<br/>APPROVE / REVIEW / BLOCK"}
-    D -->|BLOCK| RP[Replan]
-    RP --> C
-    D -->|APPROVE| V[Pre-checkout revalidation]
-    V --> X[Sandbox transaction]
-    X --> L[Trajectory + reward logging]
-    L -.-> P
-
-    style R stroke-dasharray: 5 5
-    style V stroke-dasharray: 5 5
-    style X stroke-dasharray: 5 5
-```
-
-Dashed nodes are not yet implemented.
-
-Preference precedence, highest first:
-
-1. Current hard mandate
-2. Current explicit preferences
-3. Learned category preferences
-4. General buyer preferences
-5. Default assumptions
-
----
-
-## The modules
-
-### `contracts/` — the integration seam
+## `contracts/` — the integration seam
 
 Pydantic models every other module speaks: `BuyerPreferenceProfile`, `Mandate`,
-`TransactionCandidate`, `CartSnapshot`, `DecisionResult`, plus the enums carrying
-decision semantics — `Decision` (APPROVE / REVIEW / BLOCK), `ConstraintStatus`
-(PASS / FAIL / UNKNOWN), `PreferenceSource`.
+`PurchaseIntent`, `TransactionCandidate`, `CartSnapshot`, `HumanApproval`,
+`DecisionResult`, `ReplanInstruction`, plus the enums carrying decision
+semantics — `Decision` (APPROVE / REVIEW / BLOCK), `ConstraintStatus`
+(PASS / FAIL / UNKNOWN), `PreferenceSource`, `ImportanceLevel`.
 
 `PreferenceProfileBuilder` is the protocol both learning paths implement, so
 cold-start and history-derived profiles are interchangeable downstream:
@@ -143,95 +115,129 @@ class PreferenceProfileBuilder(Protocol[ProfileInputT]):
     def build_profile(self, source: ProfileInputT, /) -> BuyerPreferenceProfile: ...
 ```
 
-`PreferenceSource` reserves `COLD_START`, `CATEGORY_HISTORY` and
-`GENERAL_HISTORY`, so every profile records which path produced it and at what
-scope.
+Every preference value carries a `source` and a `confidence`, so consumers can
+tell a stated requirement from an inferred habit. `PreferenceSource`
+distinguishes `CURRENT_EXPLICIT`, `COLD_START`, `CATEGORY_HISTORY`,
+`GENERAL_HISTORY` and `DEFAULT`.
 
-### `mandate_engine/` — mandates, constraints, decisions
+`HardRuleCandidate` carries a proposed hard rule — "never refurbished" — with
+`requires_confirmation=True`, so a prohibition inferred during onboarding must
+be confirmed before it can block a purchase.
 
-Deterministic code, never an LLM, decides policy compliance.
+---
+
+## `mandate_engine/` — mandates, constraints, decisions
+
+Deterministic code, never an LLM, decides policy compliance. Natural-language
+extraction stays outside this boundary by design.
 
 ```python
-from mandatelab_engine import parse_mandate, evaluate_constraints, evaluate_candidate
-
-mandate  = parse_mandate(intent, profile)      # precedence + fallback handling
-decision = evaluate_candidate(candidate, mandate)  # APPROVE / REVIEW / BLOCK
+from mandatelab_engine import (
+    parse_mandate,          # (intent, profile) -> Mandate
+    evaluate_constraints,   # (candidate, constraints) -> [ConstraintResult]
+    is_feasible,            # all PASS?
+    evaluate_candidate,     # (candidate, mandate) -> DecisionResult
+    validate_precheckout,   # (cart, mandate, approval) -> DecisionResult
+)
 ```
 
-Every constraint returns PASS, FAIL or **UNKNOWN**, and a candidate joins the
-feasible set only when all of them PASS — unverifiable data cannot slip through.
-Natural-language extraction stays outside this boundary by design.
+Each constraint returns PASS, **FAIL** or **UNKNOWN**, and a candidate joins the
+feasible set only when all of them PASS — unverifiable data cannot slip through
+as permission.
+
+`evaluate_candidate` returns APPROVE, REVIEW or BLOCK with named reason codes
+(`AUTONOMOUS_SPEND_LIMIT_EXCEEDED`, `FINAL_LANDED_PRICE_UNKNOWN`,
+`MATERIAL_AMBIGUITY`, …). On BLOCK it emits a `ReplanInstruction` describing the
+constraint to search under next.
+
+`validate_precheckout` re-runs the decision against the final cart. Human
+approval is bound to an exact cart snapshot, so a change to product, variant,
+price, condition, merchant or delivery invalidates it and forces revalidation.
 
 Details: [`mandate_engine/README.md`](mandate_engine/README.md)
 
-### `buyer_history/` — learning from what the buyer already bought
+---
 
-Normalises multi-channel transaction history into one schema, infers per-item and
-per-category preferences with evidence weighting, and predicts purchase
-likelihood through an additive log-odds model whose every driver is named and
-explained. New purchases and feedback produce a new profile version; nothing is
-retrained.
+## `buyer_history/` — learning from what the buyer already bought
 
-Two invariants: purchase history is **evidence, not ground truth** (current
-explicit intent outranks it), and behaviour **never emits a hard mandate** —
-`hard_rule_candidates` is always empty, because only the cold-start path may
-propose candidate hard rules.
+Normalises multi-channel transaction history into one schema, filters lines that
+are poor evidence of stable preference (subscriptions, media, one-off durables),
+and infers per-item and per-category preferences weighted by both source
+reliability and recency.
 
-Attributes the data cannot speak to — condition, return policy, delivery — are
-emitted as `ImportanceLevel.UNKNOWN` with confidence 0, never as a guessed level.
+Purchase likelihood comes from an additive log-odds model with no fitted weight
+vector, so every driver is named and explained:
 
 ```python
-from buyer_history import build_profile_from_workbook
+from buyer_history import build_profile_from_workbook, predict_purchase_probability
 from buyer_history.contract import PurchaseHistoryProfileBuilder
 
-bundle  = build_profile_from_workbook("…​.xlsx")
+bundle     = build_profile_from_workbook("…​.xlsx")
+prediction = predict_purchase_probability(bundle, candidate, context)
+print(prediction.explain())
+#   P(buy) = 0.863 (confidence 0.45 / MEDIUM)
+#     + item_affinity      +1.45  bought 4x, last on 2026-07-27
+#     + brand_fit          +0.62  Lavazza accounts for 78% of this item's purchases
+#     - price_fit          -0.09  +3% vs the $15.99 median; sensitivity here is HIGH
+
 profile = PurchaseHistoryProfileBuilder("Groceries > Coffee").build_profile(bundle)
 ```
 
-`buyer_history.contract` is the only part needing Pydantic, so it ships as an
+Price sensitivity and quality importance are scored **per category**, because a
+single household number is wrong in both directions — the same buyer absorbs a
+price rise on protein and retreats from one on coffee.
+
+New purchases and feedback produce a new profile version; nothing is retrained.
+Updates re-derive from the full ledger, so the same inputs always give the same
+profile.
+
+Two invariants: purchase history is **evidence, not ground truth** — current
+explicit intent outranks it — and behaviour **never emits a hard mandate**.
+`hard_rule_candidates` is always empty; only the cold-start path may propose
+one. Attributes the data cannot speak to (condition, return policy, delivery)
+are emitted as `UNKNOWN` at confidence 0, never as a guessed level.
+
+Shopping missions are logged as trajectories — state, intent, candidates,
+action, outcome, feedback, reward — so they can be replayed and rescored
+offline.
+
+`buyer_history.contract` is the only part needing Pydantic; it ships as an
 opt-in extra and the core stays dependency-free.
 
 Details: [`buyer_history/README.md`](buyer_history/README.md)
 
-### `user_profile/` — cold start from pairwise comparisons
-
-For buyers with no history. A React swipe deck presents product pairs exposing
-real trade-offs (price vs quality, brand vs price, new vs refurbished), and the
-Python core turns the answers into preference weights and a Pareto-filtered feed.
-A strict prohibition such as "never refurbished" should become a
-`HardRuleCandidate` with `requires_confirmation=True` rather than a silent
-ranking preference.
-
 ---
 
-## Known gaps
+## `user_profile/` — cold start from pairwise comparisons
 
-**No buyer-specific ranking.** This is the critical path.
-`evaluate_candidate()` decides whether a transaction is *permissible*; nothing
-decides which permissible candidate is *best for this buyer*.
-`RankingExplanation` is modelled but unimplemented.
-`buyer_history.predict_purchase_probability()` already returns a scored,
-fully-explained ordering and is the natural supplier.
+For buyers with no history. A React UI presents products exposing real
+trade-offs — price vs quality, brand vs price, sustainability vs cost — and
+records accept/reject responses.
 
-**No executor.** No sandbox cart, no pre-checkout revalidation. PRD §5.4 is
-untouched, so an APPROVE currently leads nowhere.
+`UserPreferenceModel` fits a Bayesian logistic model over product features and
+their interactions (main effects, pairs and triples across category, brand,
+price, quality and sustainability), giving calibrated weights and a decision
+boundary that can be plotted back into the UI:
 
-**Replanning is half-wired.** `evaluate_candidate()` emits `ReplanInstruction`
-on BLOCK, but no loop consumes it to search again.
+```python
+from user_profile import load_products, UserPreferenceModel
 
-**No shared catalog.** `user_profile/examples/products.csv` holds 12 products and
-`buyer_history` carries its own synthetic ledger. §8 calls for one normalised
-catalog both paths agree on.
+model = UserPreferenceModel(load_products("user_profile/examples/products.csv"))
+model.fit(observations)          # [(product, accepted), …]
+model.buy_probability(product)
+model.print_weights()
+```
 
-**Cold start does not emit the contract.** `buyer_history` implements
-`PreferenceProfileBuilder`; `user_profile` still returns its internal `User` and
-`UserPreferences`. Mirroring [`buyer_history/src/buyer_history/contract.py`](buyer_history/src/buyer_history/contract.py)
-would close it — and `parse_mandate()` already requires a shared profile, so
-Path A cannot reach the engine until it does.
+The package also carries the Pareto tooling — `ParetoCurve`, `filter_feed`,
+`UtilityFunction` — for reducing a catalog to its non-dominated set before
+ranking.
 
-**`category = "*"` is a convention.** The contract requires a non-empty
-`category`, so the buyer-wide profile uses `"*"` and carries its real scope in
-`PreferenceSource.GENERAL_HISTORY`. Works, but the schema does not enforce it.
+Catalog and buyer fixtures load from CSV, using the same product schema the
+frontend parses:
+
+```
+id,name,category,brand,price,quality,sustainability
+```
 
 ---
 
@@ -239,8 +245,8 @@ Path A cannot reach the engine until it does.
 
 **This repository is public and contains no real purchase data.**
 
-`buyer_history` runs on a synthetic fixture with an invented buyer, orders, dates
-and prices. Real household data lives in a gitignored `transaction data/`
+`buyer_history` runs on a synthetic fixture with an invented buyer, orders,
+dates and prices. Real household data lives in a gitignored `transaction data/`
 directory, and profiles derived from it are gitignored too — derived output
 carries the same detail as its input.
 
