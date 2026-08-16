@@ -22,6 +22,7 @@ mandatelab-engine = { workspace = true }
 
 [tool.uv.workspace]
 members = [
+    "buyer_history",
     "contracts",
     "mandate_engine",
     "user_profile",
@@ -29,4 +30,4 @@ members = [
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-pythonpath = ["contracts/src", "mandate_engine/src"]
+pythonpath = ["contracts/src", "mandate_engine/src", "buyer_history/src", "user_profile/src"]
