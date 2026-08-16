@@ -105,6 +105,7 @@ def test_health_and_openapi_publish_all_versioned_routes(
     assert response.json() == {"status": "ok"}
     paths = client.get("/openapi.json").json()["paths"]
     assert set(paths) == {
+        "/api/update",
         "/api/v1/health",
         "/api/v1/mandates",
         "/api/v1/rankings",

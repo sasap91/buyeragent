@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "fastapi",
+    "mandatelab-contracts",
     "matplotlib",
     "pandas>=3.0.5",
     "pyro-ppl",
@@ -17,6 +18,9 @@ dependencies = [
     "torch",
     "uvicorn",
 ]
+
+[tool.uv.sources]
+mandatelab-contracts = { workspace = true }
 
 [project.scripts]
 user-profile = "user_profile:main"

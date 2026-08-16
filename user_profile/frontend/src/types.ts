@@ -26,4 +26,5 @@ export type ModelSnapshot = {
     quality_price: string
     price_sustainability: string
   }
+  profile: Record<string, unknown>
 }

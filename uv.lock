@@ -1406,6 +1406,7 @@ dependencies = [
     { name = "mandatelab-contracts" },
     { name = "mandatelab-engine" },
     { name = "mandatelab-sandbox-executor" },
+    { name = "user-profile" },
     { name = "uvicorn" },
 ]
 
@@ -1420,6 +1421,7 @@ requires-dist = [
     { name = "mandatelab-contracts", editable = "contracts" },
     { name = "mandatelab-engine", editable = "mandate_engine" },
     { name = "mandatelab-sandbox-executor", editable = "sandbox_executor" },
+    { name = "user-profile", editable = "user_profile" },
     { name = "uvicorn" },
 ]
 
@@ -3397,6 +3399,7 @@ version = "0.1.0"
 source = { editable = "user_profile" }
 dependencies = [
     { name = "fastapi" },
+    { name = "mandatelab-contracts" },
     { name = "matplotlib" },
     { name = "pandas" },
     { name = "pyro-ppl" },
@@ -3415,6 +3418,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi" },
+    { name = "mandatelab-contracts", editable = "contracts" },
     { name = "matplotlib" },
     { name = "pandas", specifier = ">=3.0.5" },
     { name = "pyro-ppl" },
