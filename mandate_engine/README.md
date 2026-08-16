@@ -44,3 +44,18 @@ def build_profile(source: TheirInputType, /) -> BuyerPreferenceProfile: ...
 The input stays module-specific. The returned Pydantic model is the shared
 boundary. Example targets are in `contracts/examples/` and
 `mandate_engine/fixtures/`.
+
+## Intent-to-mandate conversion
+
+`parse_mandate(intent, profile)` accepts an already structured `PurchaseIntent`;
+it does not parse natural language or call an LLM. Current intent constraints
+override profile hard-rule candidates of the same kind. A profile candidate is
+promoted to a mandate constraint only when `requires_confirmation` is false and
+the profile category matches the mandate category.
+
+Missing goal and category values receive deterministic fallbacks and material
+ambiguity codes. Missing authorization uses a caller-supplied default policy or,
+when none exists, a zero-dollar safe policy. Both authorization fallbacks are
+marked as material ambiguities so later decision logic cannot authorize silently.
+Learned soft preferences remain in the separate buyer profile; only current
+intent soft preferences are copied into the mandate.
