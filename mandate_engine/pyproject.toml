@@ -1,0 +1,15 @@
+[project]
+name = "mandatelab-engine"
+version = "0.1.0"
+description = "Deterministic mandate evaluation for MandateLab"
+requires-python = ">=3.11"
+dependencies = [
+    "mandatelab-contracts",
+]
+
+[tool.uv.sources]
+mandatelab-contracts = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"

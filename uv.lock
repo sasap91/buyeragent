@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "mandatelab-contracts",
+    "mandatelab-engine",
     "mandatelab-workspace",
     "user-profile",
 ]
@@ -48,11 +49,23 @@ dependencies = [
 requires-dist = [{ name = "pydantic", specifier = ">=2.10,<3" }]
 
 [[package]]
+name = "mandatelab-engine"
+version = "0.1.0"
+source = { editable = "mandate_engine" }
+dependencies = [
+    { name = "mandatelab-contracts" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "mandatelab-contracts", editable = "contracts" }]
+
+[[package]]
 name = "mandatelab-workspace"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "mandatelab-contracts" },
+    { name = "mandatelab-engine" },
 ]
 
 [package.dev-dependencies]
@@ -61,7 +74,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mandatelab-contracts", editable = "contracts" }]
+requires-dist = [
+    { name = "mandatelab-contracts", editable = "contracts" },
+    { name = "mandatelab-engine", editable = "mandate_engine" },
+]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8.3,<10" }]
