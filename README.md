@@ -28,7 +28,8 @@ handing over their purchase history. Both produce the same
 `BuyerPreferenceProfile`. That profile plus a current request becomes an
 explicit **mandate**: hard constraints, soft preferences, and spending
 authority. Candidates are then checked against the mandate deterministically,
-and the final cart is revalidated immediately before checkout.
+the final cart is revalidated immediately before checkout, and only an approved
+cart can execute.
 
 ```mermaid
 flowchart TD
@@ -43,7 +44,8 @@ flowchart TD
     D -->|REVIEW| H[Human approval on an exact cart]
     D -->|BLOCK| R[ReplanInstruction]
     H --> V
-    V --> L["Trajectory + reward logging"]
+    V --> X["execute_sandbox()"]
+    X --> L["Trajectory + reward logging"]
 ```
 
 Preference precedence, highest first:
@@ -61,6 +63,7 @@ Preference precedence, highest first:
 ```
 contracts/        mandatelab_contracts  — shared schemas, the integration seam
 mandate_engine/   mandatelab_engine     — mandates, constraints, decisions, pre-checkout
+sandbox_executor/ mandatelab_sandbox_executor — guarded transaction execution
 buyer_history/    buyer_history         — preference learning from purchase history
 user_profile/     user_profile          — cold-start learning from pairwise comparisons
   frontend/       React + Vite comparison UI
@@ -155,6 +158,30 @@ approval is bound to an exact cart snapshot, so a change to product, variant,
 price, condition, merchant or delivery invalidates it and forces revalidation.
 
 Details: [`mandate_engine/README.md`](mandate_engine/README.md)
+
+---
+
+## `sandbox_executor/` — guarded execution
+
+The executor is a separate module from the Decision Engine, and it re-checks the
+decision rather than trusting it.
+
+```python
+from mandatelab_sandbox_executor import execute_sandbox, InMemorySandboxExecutor
+
+outcome = execute_sandbox(cart, decision)   # -> TransactionOutcome
+```
+
+Execution is refused, with a named code, when the decision is not APPROVE
+(`DECISION_NOT_APPROVED`), still carries violations (`DECISION_HAS_VIOLATIONS`),
+was issued for a different cart or candidate (`DECISION_CART_ID_MISMATCH`,
+`DECISION_CART_FINGERPRINT_MISMATCH`, `DECISION_CANDIDATE_MISMATCH`), leaves a
+REVIEW unresolved (`HUMAN_APPROVAL_UNRESOLVED`), has already run
+(`CART_ALREADY_EXECUTED`), or is timestamped ahead of execution
+(`DECISION_FROM_FUTURE`).
+
+The cart fingerprint check is what makes approval non-transferable: an approval
+granted for one cart cannot be replayed against a modified one.
 
 ---
 
