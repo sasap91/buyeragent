@@ -205,6 +205,14 @@ def build_item_profiles(
         else:
             repeat = RepeatBehavior.ONE_OFF
 
+        variant_weights: dict[str, float] = defaultdict(float)
+        for txn, weight in zip(rows, weights):
+            if txn.raw_item:
+                variant_weights[txn.raw_item] += weight
+        raw_variants = [
+            v for v, _ in sorted(variant_weights.items(), key=lambda kv: -kv[1])
+        ][:5]
+
         profiles[item] = ItemProfile(
             item=item,
             categories=sorted({t.category for t in rows}),
@@ -224,6 +232,7 @@ def build_item_profiles(
             attribute_rates=attribute_rates,
             evidence_weight=round(total_evidence, 4),
             confidence=_confidence(total_evidence, occasions, evidence_scale=3.0),
+            raw_variants=raw_variants,
             negative_signals=dict(negatives.get(item, {})),
         )
 

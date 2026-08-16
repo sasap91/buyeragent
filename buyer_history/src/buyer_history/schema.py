@@ -252,6 +252,9 @@ class ItemProfile:
     attribute_rates: dict[str, float]
     evidence_weight: float
     confidence: float
+    # The product strings as the retailer wrote them, most-bought first. Far more
+    # searchable than the normalized name: "Green Curly Kale 1 bunch" beats "Kale".
+    raw_variants: list[str] = field(default_factory=list)
     negative_signals: dict[str, int] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
