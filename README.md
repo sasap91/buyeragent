@@ -27,9 +27,8 @@ A buyer arrives by one of two paths — swiping through product comparisons, or
 handing over their purchase history. Both produce the same
 `BuyerPreferenceProfile`. That profile plus a current request becomes an
 explicit **mandate**: hard constraints, soft preferences, and spending
-authority. Candidates are then checked against the mandate deterministically,
-the final cart is revalidated immediately before checkout, and only an approved
-cart can execute.
+authority. Candidates are checked against it deterministically, ranked for this
+buyer, revalidated immediately before checkout, and only then executed.
 
 ```mermaid
 flowchart TD
@@ -39,13 +38,15 @@ flowchart TD
     P --> M["parse_mandate()"]
     M --> E["evaluate_constraints()<br/>PASS / FAIL / UNKNOWN"]
     C[Candidate products] --> E
-    E --> D{"evaluate_candidate()"}
+    E --> F[Feasible set]
+    F --> R["rank_candidates()"]
+    R --> D{"evaluate_candidate()"}
     D -->|APPROVE| V["validate_precheckout()"]
     D -->|REVIEW| H[Human approval on an exact cart]
-    D -->|BLOCK| R[ReplanInstruction]
+    D -->|BLOCK| RP[ReplanInstruction]
     H --> V
-    V --> X["execute_sandbox()"]
-    X --> L["Trajectory + reward logging"]
+    V --> X["execute_sandbox()<br/>or a live cart"]
+    X --> L[Trajectory + reward logging]
 ```
 
 Preference precedence, highest first:
@@ -61,14 +62,16 @@ Preference precedence, highest first:
 ## Layout
 
 ```
-contracts/        mandatelab_contracts  — shared schemas, the integration seam
-api/              mandatelab_api        — versioned FastAPI composition routes
-mandate_engine/   mandatelab_engine     — mandates, constraints, decisions, pre-checkout
-sandbox_executor/ mandatelab_sandbox_executor — guarded transaction execution
-buyer_history/    buyer_history         — preference learning from purchase history
-user_profile/     user_profile          — cold-start learning from pairwise comparisons
-  frontend/       React + Vite comparison UI
-docs/             the PRD
+contracts/         mandatelab_contracts        shared schemas, the integration seam
+mandate_engine/    mandatelab_engine           mandates, constraints, ranking, decisions
+sandbox_executor/  mandatelab_sandbox_executor guarded simulated execution
+weee_cart/         mandatelab_weee_cart        guarded execution against a live store
+buyer_history/     buyer_history               preference learning from purchase history
+user_profile/      user_profile                cold-start learning from pairwise comparisons
+  frontend/        React + Vite comparison UI
+api/               mandatelab_api              the workflow over HTTP
+examples/          mvp_demo.py                 the whole flow, end to end
+docs/              the PRD
 ```
 
 ---
@@ -80,43 +83,41 @@ Python 3.11, [uv](https://docs.astral.sh/uv/) for the workspace.
 ```bash
 uv sync
 uv run pytest
+uv run python examples/mvp_demo.py      # the deterministic end-to-end flow
 ```
 
-Demos:
+The HTTP API:
 
 ```bash
-python3 examples/mvp_demo.py                 # complete safety + execution flow
-python3 buyer_history/examples/demo.py   # profile → prediction → update → trajectory
-python3 user_profile/examples/demo.py    # Pareto set + ranked feed per buyer
+uv run uvicorn mandatelab_api:app --reload      # docs at /docs
 ```
 
-`buyer_history` is stdlib-only, so it also runs with no install at all:
-
-```bash
-python3 buyer_history/tests/test_buyer_history.py   # 40 checks, no pytest needed
-```
-
-The comparison UI:
+The comparison UI (cold start):
 
 ```bash
 cd user_profile/frontend && npm install && npm run dev
 ```
 
-The composition API:
+The weekly basket UI (purchase history → a real cart):
 
 ```bash
-uv run mandatelab-api
-# OpenAPI: http://127.0.0.1:8000/docs
+python buyer_history/examples/weekly_basket_app.py      # http://127.0.0.1:8765
+```
+
+`buyer_history` is stdlib-only, so its core also runs with no install at all:
+
+```bash
+python3 buyer_history/tests/test_buyer_history.py       # 40 checks, no pytest needed
 ```
 
 ---
 
 ## `contracts/` — the integration seam
 
-Pydantic models every other module speaks: `BuyerPreferenceProfile`, `Mandate`,
-`PurchaseIntent`, `TransactionCandidate`, `CartSnapshot`, `HumanApproval`,
-`DecisionResult`, `ReplanInstruction`, plus the enums carrying decision
-semantics — `Decision` (APPROVE / REVIEW / BLOCK), `ConstraintStatus`
+Pydantic models every other package speaks: `BuyerPreferenceProfile`,
+`Mandate`, `PurchaseIntent`, `TransactionCandidate`, `CartSnapshot`,
+`HumanApproval`, `DecisionResult`, `ReplanInstruction`, plus the enums carrying
+decision semantics — `Decision` (APPROVE / REVIEW / BLOCK), `ConstraintStatus`
 (PASS / FAIL / UNKNOWN), `PreferenceSource`, `ImportanceLevel`.
 
 `PreferenceProfileBuilder` is the protocol both learning paths implement, so
@@ -138,59 +139,79 @@ be confirmed before it can block a purchase.
 
 ---
 
-## `mandate_engine/` — mandates, constraints, decisions
+## `mandate_engine/` — mandates, constraints, ranking, decisions
 
 Deterministic code, never an LLM, decides policy compliance. Natural-language
 extraction stays outside this boundary by design.
 
 ```python
 from mandatelab_engine import (
-    parse_mandate,          # (intent, profile) -> Mandate
-    evaluate_constraints,   # (candidate, constraints) -> [ConstraintResult]
+    parse_mandate,          # (intent, profile)          -> Mandate
+    evaluate_constraints,   # (candidate, constraints)   -> [ConstraintResult]
     is_feasible,            # all PASS?
-    evaluate_candidate,     # (candidate, mandate) -> DecisionResult
-    validate_precheckout,   # (cart, mandate, approval) -> DecisionResult
+    rank_candidates,        # (candidates, mandate, profile) -> [RankedCandidate]
+    evaluate_candidate,     # (candidate, mandate)       -> DecisionResult
+    validate_precheckout,   # (cart, mandate, approval)  -> DecisionResult
 )
 ```
 
-Each constraint returns PASS, **FAIL** or **UNKNOWN**, and a candidate joins the
-feasible set only when all of them PASS — unverifiable data cannot slip through
-as permission.
+Every constraint returns PASS, **FAIL** or **UNKNOWN**, and a candidate joins
+the feasible set only when all of them PASS — unverifiable data cannot slip
+through as permission.
 
-`evaluate_candidate` returns APPROVE, REVIEW or BLOCK with named reason codes
+`rank_candidates` orders the feasible set by buyer-specific weighting, which is
+what separates *permissible* from *best for this buyer*. `evaluate_candidate`
+returns APPROVE, REVIEW or BLOCK with named reason codes
 (`AUTONOMOUS_SPEND_LIMIT_EXCEEDED`, `FINAL_LANDED_PRICE_UNKNOWN`,
-`MATERIAL_AMBIGUITY`, …). On BLOCK it emits a `ReplanInstruction` describing the
-constraint to search under next.
+`MATERIAL_AMBIGUITY`, …), and on BLOCK emits a `ReplanInstruction` describing
+the constraint to search under next.
 
 `validate_precheckout` re-runs the decision against the final cart. Human
-approval is bound to an exact cart snapshot, so a change to product, variant,
-price, condition, merchant or delivery invalidates it and forces revalidation.
+approval binds to an exact cart snapshot, so a change to product, variant,
+price, condition, merchant or delivery invalidates it.
 
 Details: [`mandate_engine/README.md`](mandate_engine/README.md)
 
 ---
 
-## `sandbox_executor/` — guarded execution
+## `api/` — the workflow over HTTP
 
-The executor is a separate module from the Decision Engine, and it re-checks the
+FastAPI, mounted under `/api/v1`, mirroring the engine one-for-one:
+
+| Method | Path | |
+|---|---|---|
+| GET | `/health` | liveness |
+| POST | `/mandates` | intent + profile → `Mandate` |
+| POST | `/rankings` | candidates → ranked, buyer-specific |
+| POST | `/decisions` | candidate → APPROVE / REVIEW / BLOCK |
+| POST | `/precheckout` | final cart → revalidated decision |
+| POST | `/sandbox/execute` | approved cart → `TransactionOutcome` |
+
+---
+
+## Execution
+
+Two executors, both separate from the Decision Engine and both re-checking the
 decision rather than trusting it.
 
-```python
-from mandatelab_sandbox_executor import execute_sandbox, InMemorySandboxExecutor
+**`sandbox_executor/`** — simulated. `execute_sandbox(cart, decision)` refuses
+with a named code when the decision is not APPROVE, still carries violations,
+was issued for a different cart or candidate, leaves a REVIEW unresolved, has
+already run, or is timestamped ahead of execution. The cart fingerprint check
+is what makes approval non-transferable between carts.
 
-outcome = execute_sandbox(cart, decision)   # -> TransactionOutcome
-```
+**`weee_cart/`** — a live grocery cart. Basket lines are gated through
+`parse_mandate` → `evaluate_candidate` before the browser sees them; only
+APPROVE is acted on. It drives a Chrome it owns with a persistent profile, so
+the buyer signs in once and no credential passes through the code. Quantity is
+*set*, not incremented — it reads the tile's current value and steps to the
+target, so a repeat run leaves the cart matching the plan instead of doubling
+it. Outcomes distinguish `ADDED`, `OUT_OF_STOCK`, `NO_MATCH`,
+`PRICE_ABOVE_LIMIT` and `PARTIAL`, because "sold out" and "no match" are
+different facts.
 
-Execution is refused, with a named code, when the decision is not APPROVE
-(`DECISION_NOT_APPROVED`), still carries violations (`DECISION_HAS_VIOLATIONS`),
-was issued for a different cart or candidate (`DECISION_CART_ID_MISMATCH`,
-`DECISION_CART_FINGERPRINT_MISMATCH`, `DECISION_CANDIDATE_MISMATCH`), leaves a
-REVIEW unresolved (`HUMAN_APPROVAL_UNRESOLVED`), has already run
-(`CART_ALREADY_EXECUTED`), or is timestamped ahead of execution
-(`DECISION_FROM_FUTURE`).
-
-The cart fingerprint check is what makes approval non-transferable: an approval
-granted for one cart cannot be replayed against a modified one.
+It only ever adds to a cart. There is no checkout path, and a test greps for
+one.
 
 ---
 
@@ -206,6 +227,7 @@ vector, so every driver is named and explained:
 
 ```python
 from buyer_history import build_profile_from_workbook, predict_purchase_probability
+from buyer_history.basket import suggest_weekly_basket
 from buyer_history.contract import PurchaseHistoryProfileBuilder
 
 bundle     = build_profile_from_workbook("…​.xlsx")
@@ -216,12 +238,17 @@ print(prediction.explain())
 #     + brand_fit          +0.62  Lavazza accounts for 78% of this item's purchases
 #     - price_fit          -0.09  +3% vs the $15.99 median; sensitivity here is HIGH
 
+basket  = suggest_weekly_basket(bundle)            # what to buy this week
 profile = PurchaseHistoryProfileBuilder("Groceries > Coffee").build_profile(bundle)
 ```
 
 Price sensitivity and quality importance are scored **per category**, because a
 single household number is wrong in both directions — the same buyer absorbs a
 price rise on protein and retreats from one on coffee.
+
+`suggest_weekly_basket` proposes items whose replenishment cycle comes due,
+at the quantity the buyer usually takes. One-off purchases are excluded: a
+product bought once is a past decision, not a recurring need.
 
 New purchases and feedback produce a new profile version; nothing is retrained.
 Updates re-derive from the full ledger, so the same inputs always give the same
@@ -231,14 +258,7 @@ Two invariants: purchase history is **evidence, not ground truth** — current
 explicit intent outranks it — and behaviour **never emits a hard mandate**.
 `hard_rule_candidates` is always empty; only the cold-start path may propose
 one. Attributes the data cannot speak to (condition, return policy, delivery)
-are emitted as `UNKNOWN` at confidence 0, never as a guessed level.
-
-Shopping missions are logged as trajectories — state, intent, candidates,
-action, outcome, feedback, reward — so they can be replayed and rescored
-offline.
-
-`buyer_history.contract` is the only part needing Pydantic; it ships as an
-opt-in extra and the core stays dependency-free.
+are emitted as `ImportanceLevel.UNKNOWN` at confidence 0, never as a guess.
 
 Details: [`buyer_history/README.md`](buyer_history/README.md)
 
@@ -247,29 +267,21 @@ Details: [`buyer_history/README.md`](buyer_history/README.md)
 ## `user_profile/` — cold start from pairwise comparisons
 
 For buyers with no history. A React UI presents products exposing real
-trade-offs — price vs quality, brand vs price, sustainability vs cost — and
-records accept/reject responses.
+trade-offs — price vs quality, brand vs price, new vs refurbished — and records
+accept/reject responses over `/api/pairs` and `/api/update`.
 
 `UserPreferenceModel` fits a Bayesian logistic model over product features and
 their interactions (main effects, pairs and triples across category, brand,
 price, quality and sustainability), giving calibrated weights and a decision
-boundary that can be plotted back into the UI:
-
-```python
-from user_profile import load_products, UserPreferenceModel
-
-model = UserPreferenceModel(load_products("user_profile/examples/products.csv"))
-model.fit(observations)          # [(product, accepted), …]
-model.buy_probability(product)
-model.print_weights()
-```
+boundary the UI plots back. `ColdStartProfileBuilder` converts those responses
+into the shared contract, turning a strict prohibition such as "never
+refurbished" into a `HardRuleCandidate` with `requires_confirmation=True`
+rather than a silent ranking preference.
 
 The package also carries the Pareto tooling — `ParetoCurve`, `filter_feed`,
 `UtilityFunction` — for reducing a catalog to its non-dominated set before
-ranking.
-
-Catalog and buyer fixtures load from CSV, using the same product schema the
-frontend parses:
+ranking. Catalog and buyer fixtures load from CSV, using the same product schema
+the frontend parses:
 
 ```
 id,name,category,brand,price,quality,sustainability
