@@ -76,3 +76,18 @@ as a warning but does not prevent approval. Every `REVIEW` requires human action
 A `BLOCK` includes violations and a structured replanning instruction that
 excludes the rejected candidate. Candidate evaluation does not validate an
 earlier cart approval; final pre-checkout validation remains a later stage.
+
+## Final pre-checkout validation
+
+`compute_cart_fingerprint(candidate, material_fields)` creates a canonical SHA-256
+fingerprint of the material fields configured by `AuthorizationPolicy`.
+`validate_precheckout(cart, mandate, approval)` recomputes that fingerprint,
+reruns all constraints and spending limits, and validates any approval against
+the exact mandate ID, mandate version, cart ID, fingerprint, and validity window.
+
+A valid approval may convert `REVIEW` to `APPROVE` only when the sole review
+condition is spend above the autonomous limit but within the maximum authorized
+total. It cannot override `BLOCK`, a required `UNKNOWN`, missing final price, or
+material mandate ambiguity. A changed cart, stale fingerprint, expired approval,
+future-dated approval, or identifier mismatch returns `REVIEW` and requires a new
+exact-cart approval.

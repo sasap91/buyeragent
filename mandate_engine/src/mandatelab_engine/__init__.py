@@ -20,6 +20,20 @@ from mandatelab_engine.mandates import (
     MandateConversionError,
     parse_mandate,
 )
+from mandatelab_engine.precheckout import (
+    APPROVAL_CANNOT_OVERRIDE_REVIEW,
+    APPROVAL_CART_MISMATCH,
+    APPROVAL_EXPIRED,
+    APPROVAL_FINGERPRINT_MISMATCH,
+    APPROVAL_MANDATE_MISMATCH,
+    APPROVAL_MANDATE_VERSION_MISMATCH,
+    APPROVAL_NOT_YET_VALID,
+    APPROVAL_REQUIRED,
+    CART_FINGERPRINT_MISMATCH,
+    HUMAN_APPROVAL_APPLIED,
+    compute_cart_fingerprint,
+    validate_precheckout,
+)
 
 __all__ = [
     "ConstraintDefinitionError",
@@ -33,9 +47,21 @@ __all__ = [
     "MATERIAL_AMBIGUITY",
     "MAXIMUM_AUTHORIZED_TOTAL_EXCEEDED",
     "PROFILE_RULE_REQUIRES_CONFIRMATION",
+    "APPROVAL_CANNOT_OVERRIDE_REVIEW",
+    "APPROVAL_CART_MISMATCH",
+    "APPROVAL_EXPIRED",
+    "APPROVAL_FINGERPRINT_MISMATCH",
+    "APPROVAL_MANDATE_MISMATCH",
+    "APPROVAL_MANDATE_VERSION_MISMATCH",
+    "APPROVAL_NOT_YET_VALID",
+    "APPROVAL_REQUIRED",
+    "CART_FINGERPRINT_MISMATCH",
+    "HUMAN_APPROVAL_APPLIED",
+    "compute_cart_fingerprint",
     "evaluate_constraint",
     "evaluate_constraints",
     "evaluate_candidate",
     "is_feasible",
     "parse_mandate",
+    "validate_precheckout",
 ]
