@@ -1,3 +1,4 @@
+from user_profile.csv_io import load_products, load_users
 from user_profile.objectives import ObjectiveScores, score_catalog, score_product
 from user_profile.pareto import CurvePoint, ParetoCurve, dominates, filter_feed
 from user_profile.preferences import PREFERENCE_AXES, User, UserPreferences
@@ -15,6 +16,8 @@ __all__ = [
     "UtilityFunction",
     "dominates",
     "filter_feed",
+    "load_products",
+    "load_users",
     "score_catalog",
     "score_product",
 ]

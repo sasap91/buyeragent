@@ -1,0 +1,22 @@
+[project]
+name = "agents-that-buy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "lrast", email = "luke.rast@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+agents-that-buy = "agents_that_buy:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.workspace]
+members = [
+    "agents_that_buy/user_profile",
+]
