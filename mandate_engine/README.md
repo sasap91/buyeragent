@@ -59,3 +59,20 @@ when none exists, a zero-dollar safe policy. Both authorization fallbacks are
 marked as material ambiguities so later decision logic cannot authorize silently.
 Learned soft preferences remain in the separate buyer profile; only current
 intent soft preferences are copied into the mandate.
+
+## Candidate decisions
+
+`evaluate_candidate(candidate, mandate)` evaluates the mandate constraints and
+authorization policy without ranking the candidate. Decision precedence is:
+
+1. Any known hard-constraint failure or spend above the maximum authorized
+   total returns `BLOCK`.
+2. Required unknown constraint data, missing final landed price, material
+   ambiguity, or spend above the autonomous limit returns `REVIEW`.
+3. Otherwise the result is `APPROVE`.
+
+An unknown result for a constraint whose `required` field is false is retained
+as a warning but does not prevent approval. Every `REVIEW` requires human action.
+A `BLOCK` includes violations and a structured replanning instruction that
+excludes the rejected candidate. Candidate evaluation does not validate an
+earlier cart approval; final pre-checkout validation remains a later stage.
