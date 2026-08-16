@@ -1,50 +1,60 @@
-import { useEffect, useState } from 'react'
-import productsCsv from '../../examples/products.csv?raw'
-import { updateModel } from './api'
+import { useEffect, useMemo, useState } from 'react'
+import { fetchPairs, updateModel } from './api'
 import './App.css'
+import { ComparisonView } from './components/ComparisonView'
 import { ModelPanel } from './components/ModelPanel'
-import { ProductList } from './components/ProductList'
 import { Results } from './components/Results'
-import { parseProducts } from './parseProducts'
-import type { ModelSnapshot, Product, SwipeResponse } from './types'
+import type {
+  ComparisonAnswer,
+  ComparisonCatalog,
+  ComparisonChoice,
+  ModelSnapshot,
+} from './types'
 
-const catalog = parseProducts(productsCsv)
-
-function rejectResponse(product: Product): SwipeResponse {
-  return {
-    product_id: product.id,
-    name: product.name,
-    accepted: false,
-    feedback: '',
-  }
-}
-
-function acceptResponse(product: Product): SwipeResponse {
-  return {
-    product_id: product.id,
-    name: product.name,
-    accepted: true,
-    feedback: '',
-  }
-}
+const BUYER_ID = 'buyer-maya'
 
 export default function App() {
-  const [remaining, setRemaining] = useState<Product[]>(catalog)
-  const [responses, setResponses] = useState<SwipeResponse[]>([])
+  const [catalog, setCatalog] = useState<ComparisonCatalog | null>(null)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [index, setIndex] = useState(0)
+  const [comparisons, setComparisons] = useState<ComparisonAnswer[]>([])
   const [done, setDone] = useState(false)
   const [model, setModel] = useState<ModelSnapshot | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const demoPairs = useMemo(
+    () => (catalog ? catalog.pairs.slice(0, catalog.demo_pair_count) : []),
+    [catalog],
+  )
+
   useEffect(() => {
     const controller = new AbortController()
-    const remainingIds = remaining.map((item) => item.id)
-    const rejectedIds = responses
-      .filter((item) => !item.accepted)
-      .map((item) => item.product_id)
+    fetchPairs(controller.signal)
+      .then((payload) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        setCatalog(payload)
+        setCatalogError(null)
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        setCatalogError(err instanceof Error ? err.message : 'Failed to load comparisons')
+      })
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    if (!catalog) {
+      return
+    }
+    const controller = new AbortController()
     setLoading(true)
     setError(null)
-    updateModel(remainingIds, rejectedIds, controller.signal)
+    updateModel(BUYER_ID, comparisons, controller.signal)
       .then((snapshot) => {
         if (controller.signal.aborted) {
           return
@@ -60,44 +70,55 @@ export default function App() {
         setError(err instanceof Error ? err.message : 'Failed to update model')
       })
     return () => controller.abort()
-  }, [remaining, responses])
+  }, [catalog, comparisons])
 
-  const remove = (id: string) => {
-    const product = remaining.find((item) => item.id === id)
-    if (!product) {
+  const choose = (choice: ComparisonChoice) => {
+    const pair = demoPairs[index]
+    if (!pair) {
       return
     }
-    const next = remaining.filter((item) => item.id !== product.id)
-    setResponses((prev) => [...prev, rejectResponse(product)])
-    setRemaining(next)
-    if (next.length === 0) {
+    const next = [...comparisons, { pair_id: pair.pair_id, choice }]
+    setComparisons(next)
+    if (next.length >= demoPairs.length) {
       setDone(true)
+    } else {
+      setIndex((current) => current + 1)
     }
-  }
-
-  const finish = () => {
-    setResponses((prev) => [...prev, ...remaining.map(acceptResponse)])
-    setDone(true)
   }
 
   const restart = () => {
-    setRemaining(catalog)
-    setResponses([])
+    setIndex(0)
+    setComparisons([])
     setDone(false)
     setModel(null)
     setError(null)
   }
 
+  const pair = demoPairs[index]
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Products</h1>
+        <h1>MandateLab · Cold start</h1>
       </header>
-      <div className="app-body">
-        {done ? (
-          <Results responses={responses} onRestart={restart} />
+      <div className="app-body comparison-layout">
+        {catalogError ? (
+          <p className="model-error">{catalogError}</p>
+        ) : done ? (
+          <Results
+            profile={model?.profile ?? null}
+            comparisons={comparisons}
+            onRestart={restart}
+          />
+        ) : pair ? (
+          <ComparisonView
+            pair={pair}
+            index={index}
+            total={demoPairs.length}
+            onChoose={choose}
+          />
         ) : (
-          <ProductList products={remaining} onRemove={remove} onDone={finish} />
+          <p className="empty">Loading comparisons…</p>
         )}
         <ModelPanel model={model} loading={loading} error={error} />
       </div>

@@ -4,9 +4,11 @@ version = "0.1.0"
 description = "MandateLab hackathon workspace"
 requires-python = ">=3.11"
 dependencies = [
+    "mandatelab-api",
     "mandatelab-contracts",
     "mandatelab-engine",
     "mandatelab-sandbox-executor",
+    "user-profile",
 ]
 
 [dependency-groups]
@@ -18,12 +20,15 @@ dev = [
 package = false
 
 [tool.uv.sources]
+mandatelab-api = { workspace = true }
 mandatelab-contracts = { workspace = true }
 mandatelab-engine = { workspace = true }
 mandatelab-sandbox-executor = { workspace = true }
+user-profile = { workspace = true }
 
 [tool.uv.workspace]
 members = [
+    "api",
     "buyer_history",
     "contracts",
     "mandate_engine",
@@ -35,6 +40,8 @@ members = [
 [tool.pytest.ini_options]
 addopts = "-ra"
 pythonpath = [
+    ".",
+    "api/src",
     "contracts/src",
     "mandate_engine/src",
     "buyer_history/src",

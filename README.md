@@ -62,6 +62,7 @@ Preference precedence, highest first:
 
 ```
 contracts/        mandatelab_contracts  — shared schemas, the integration seam
+api/              mandatelab_api        — versioned FastAPI composition routes
 mandate_engine/   mandatelab_engine     — mandates, constraints, decisions, pre-checkout
 sandbox_executor/ mandatelab_sandbox_executor — guarded transaction execution
 buyer_history/    buyer_history         — preference learning from purchase history
@@ -84,6 +85,7 @@ uv run pytest
 Demos:
 
 ```bash
+python3 examples/mvp_demo.py                 # complete safety + execution flow
 python3 buyer_history/examples/demo.py   # profile → prediction → update → trajectory
 python3 user_profile/examples/demo.py    # Pareto set + ranked feed per buyer
 ```
@@ -98,6 +100,13 @@ The comparison UI:
 
 ```bash
 cd user_profile/frontend && npm install && npm run dev
+```
+
+The composition API:
+
+```bash
+uv run mandatelab-api
+# OpenAPI: http://127.0.0.1:8000/docs
 ```
 
 ---
